@@ -1,5 +1,12 @@
 const express = require('express')
-const app = express();
+const bodyParse = require('body-parser')
+const _ = require('lodash')
+const {ObjectId} = require('mongodb')
+const {mongoose} = require('./db/mongoose')
 
-app.get('/', (req, res) => res.send("etekel 3ala allah"))
+const app = express();
+test ={
+    test: 'test'
+}
+app.get('/', (req, res)=> {res.send(test)});
 app.listen(3000, () => console.log("Game Changers up, Listening on port 3000, inshallah."))
