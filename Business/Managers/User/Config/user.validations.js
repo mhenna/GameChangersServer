@@ -1,6 +1,6 @@
 const Joi = require('joi');
 
-module.exports =  {
+module.exports = {
     // POST /users/login
   login: {
     body: {
@@ -8,4 +8,4 @@ module.exports =  {
       password: Joi.string().required()
     }
   }
-}
+};
