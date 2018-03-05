@@ -3,7 +3,8 @@ import logger from '../config/winston';
 
 mongoose.Promise = global.Promise;
 mongoose.connect('mongodb://localhost:27017/gameChangers', {})
-    .then(logger.info('Connected to mongo'));
+    .then((success) => logger.info('Connected to mongo'))
+    .catch((error) => logger.error(error))
 
 module.exports = {
     mongoose
