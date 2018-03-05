@@ -7,7 +7,6 @@ import bcrypt from 'bcrypt';
 
 function registerUser(req, res) {
   var user = new User(req.body);
-  console.log(user);
   user.save((err, user) =>{
     if(err)
     {
@@ -26,12 +25,25 @@ function registerUser(req, res) {
     else {
         return res.status(200).json({
         status : '200',
-        message: 'Success'
+        message: 'Success',
+        body: user._id
       })
     }
   })
 }
-
+function authenticate(req, res) {
+ User.findByIdAndUpdate(req.body.userId, {isAuthenticated : true}, (callback) => {
+   return res.status(200).json({
+     status:'200',
+     body: callback
+   })
+  }, (err) => {
+    res.status(404).json({
+      status: '404',
+      statustext: "User not found"
+    })
+  })
+}
 function loginUser(req, res, next) {
   User.findOne({
     email: req.body.email
@@ -51,6 +63,7 @@ function loginUser(req, res, next) {
             // Check if password matches
       user.comparePassword(req.body.password, (err, isMatch) => {
         if (isMatch && !err) {
+          //authenticate user, if it's his first login
                     // Create token if the password matched and no error was thrown
           const token = jwt.sign(user.toJSON(), config.jwtSecret);
           res.status(200).json({
@@ -150,5 +163,6 @@ module.exports = {
   registerUser,
   forgotPassword,
   resetPassword,
-  loginUser
+  loginUser,
+  authenticate
 };

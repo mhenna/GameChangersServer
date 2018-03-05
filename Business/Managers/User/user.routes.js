@@ -32,5 +32,6 @@ router.route('/protected-route')
      */
     res.send("AUTHORIZED");
   });
-
+router.route('/authenticate')
+  .post(UserManager.authenticate)
 module.exports = router;
