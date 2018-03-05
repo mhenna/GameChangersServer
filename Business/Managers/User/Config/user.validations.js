@@ -24,5 +24,17 @@ module.exports = {
       previousParticipation: Joi.boolean().required(),
       ideasOrder: Joi.array().required()
     }
+  },
+  resetPassword: {
+    body: {
+      newPassword: Joi.string().required(),
+      verifyPassword: Joi.string().required(),
+      token: Joi.string().required()
+    }
+  },
+  forgotPassword: {
+    body: {
+      email: Joi.string().required()
+    }
   }
 };
