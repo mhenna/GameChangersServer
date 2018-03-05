@@ -12,11 +12,15 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  region:{
+    type: String,
+    required: true
+  },
   password: {
     type: String,
     required: true
   },
-  bio: {
+  brief: {
     default: 'This used did not add any bio',
     type: String
   },
@@ -29,12 +33,14 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: 0
   },
-  craetorOf: {
+  //this attribute shows if the user is a creator of a team or not, if yes, the id of the team will be input
+  creatorOf: {
     type: String,
     default: '-1'
   },
   careerLevel: {
-    type: String
+    type: String,
+    required: true
   },
   isRemote: {
     type: Boolean,
@@ -44,6 +50,9 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  otherLocation: {
+    type: String,
+  },
   genNextMember: {
     type: Boolean,
     required: true
@@ -52,7 +61,7 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     required: true
   },
-  preferences: {
+  ideasOrder: {
         // type: String,
     type: [],
     required: true
@@ -60,7 +69,7 @@ const userSchema = new mongoose.Schema({
 });
 
 // Hash the user's password before inserting a new user
-userSchema.pre('save', (next) => {
+userSchema.pre('save', function (next) {
   const user = this;
   if (this.isModified('password') || this.isNew) {
     bcrypt.genSalt(10, (err, salt) => {

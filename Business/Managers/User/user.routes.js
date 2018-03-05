@@ -11,6 +11,8 @@ const router = express.Router(); // eslint-disable-line new-cap
 router.route('/login')
   .post(validate(userValidation.login), UserManager.loginUser);
 
+router.route('/signup')
+  .post(validate(userValidation.register),UserManager.registerUser);
 router.route('/protected-route')
   .get(expressJwt({ secret: config.jwtSecret }), (req,res)=>{
     /**

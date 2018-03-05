@@ -1,7 +1,7 @@
 import express from 'express';
 import logger from 'morgan';
+import cors from 'cors'
 import bodyParser from 'body-parser';
-import cors from 'cors';
 import httpStatus from 'http-status';
 import expressWinston from 'express-winston';
 import expressValidation from 'express-validation';
@@ -12,13 +12,11 @@ import winstonInstance from './winston';
 import config from './config';
 import UserManager from '../Business/Managers/User/UserManager';
 import userRoutes from '../Business/Managers/User/user.routes';
-
 const app = express();
 
 if (config.env === 'development') {
   app.use(logger('dev'));
 }
-
 // parse body params and attache them to req.body
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
