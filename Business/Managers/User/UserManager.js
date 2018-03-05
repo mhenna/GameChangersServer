@@ -1,34 +1,9 @@
-import { ok } from 'assert';
-
 const User = require('../User/Models/user');
 const jwt = require('jsonwebtoken');
 import config from '../../../config/config';
 
-function registerUser(req, res) {
-  var user = new User(req.body);
-  console.log(user);
-  user.save((err, user) =>{
-    if(err)
-    {
-      return res.status(409).json({
-        status: '409',
-        message: 'User already exists'
-      })
-    }
-    if(!user) 
-    {
-      return res.status(500).json({
-        status: '500',
-        message: 'Internal server error'
-      })
-    }
-    else {
-        return res.status(200).json({
-        status : '200',
-        message: 'Success'
-      })
-    }
-  })
+function registerUser(body) {
+  console.log(body);
 }
 
 function loginUser(req, res, next) {
