@@ -12,6 +12,10 @@ import winstonInstance from './winston';
 import config from './config';
 import UserManager from '../Business/Managers/User/UserManager';
 import userRoutes from '../Business/Managers/User/user.routes';
+import teamRoutes from '../Business/Managers/Team/team.routes';
+import expressJwt from 'express-jwt';
+
+
 const app = express();
 
 if (config.env === 'development') {
@@ -50,6 +54,7 @@ if (config.env === 'development') {
 app.post('/register', (req, res) => { UserManager.registerUser(req); });
 // mount user routes at /users
 app.use('/users', userRoutes);
+app.use('/teams', expressJwt({secret: config.jwtSecret}), teamRoutes);
 
 // error handler
 app.use((err, req, res, next) => {

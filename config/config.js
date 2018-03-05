@@ -8,7 +8,8 @@ const envVars = process.env;
 const config = {
   env: envVars.NODE_ENV,
   jwtSecret: envVars.JWT_SECRET,
-  port: envVars.PORT
+  port: envVars.PORT,
+  emailRegex: envVars.EMAIL_REGEX
 };
 
 export default config;

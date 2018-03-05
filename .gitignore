@@ -49,3 +49,6 @@ node_modules
 
 # .env
 .env
+
+# mail credentials
+Services/Credentials.env
