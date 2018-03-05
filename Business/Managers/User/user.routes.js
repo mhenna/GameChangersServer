@@ -1,7 +1,9 @@
 const express = require('express');
 const validate = require('express-validation');
+import expressJwt from 'express-jwt';
 const userValidation = require('../User/Config/user.validations');
 const UserManager = require('./UserManager');
+import config from '../../../config/config'
 
 const router = express.Router(); // eslint-disable-line new-cap
 
@@ -9,5 +11,13 @@ const router = express.Router(); // eslint-disable-line new-cap
 router.route('/login')
   .post(validate(userValidation.login), UserManager.loginUser);
 
+router.route('/protected-route')
+  .get(expressJwt({ secret: config.jwtSecret }), (req,res)=>{
+    /**
+     * You can access the authenticated user object using req.user
+     * This is the payload of the created token
+     */
+    res.send("AUTHORIZED");
+  });
 
 module.exports = router;

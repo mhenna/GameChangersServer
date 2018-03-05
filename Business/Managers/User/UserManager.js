@@ -1,5 +1,6 @@
 const User = require('../User/Models/user');
 const jwt = require('jsonwebtoken');
+import config from '../../../config/config';
 
 function registerUser(body) {
   console.log(body);
@@ -25,7 +26,7 @@ function loginUser(req, res, next) {
       user.comparePassword(req.body.password, (err, isMatch) => {
         if (isMatch && !err) {
                     // Create token if the password matched and no error was thrown
-          const token = jwt.sign({}, 'mysecretpassword=D');
+          const token = jwt.sign(user.toJSON(), config.jwtSecret);
           res.status(200).json({
             success: true,
             message: 'Authentication successfull',
