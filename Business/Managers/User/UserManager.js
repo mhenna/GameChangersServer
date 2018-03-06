@@ -87,6 +87,8 @@ function loginUser(req, res, next) {
   });
 }
 
+function getUser(req, res, err) {
+  res.send(req.user);
 function forgotPassword(req, res, next) {
   async.waterfall([
     (done) => {
@@ -161,8 +163,10 @@ function resetPassword(req, res, next) {
 
 module.exports = {
   registerUser,
+  loginUser,
   forgotPassword,
   resetPassword,
   loginUser,
   authenticate
+
 };

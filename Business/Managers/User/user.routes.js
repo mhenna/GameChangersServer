@@ -15,6 +15,11 @@ router.route('/login')
 router.route('/signup')
   .post(validate(userValidation.register),UserManager.registerUser);
 
+
+// get the current user object
+router.route('/user')
+  .get(expressJwt({ secret: config.jwtSecret }), UserManager.getUser);
+
 /** POST /users/forgot-password - Send a mail to reset the password of a user */
 router.route('/forgot-password')
   .post(validate(userValidation.forgotPassword), UserManager.forgotPassword);
