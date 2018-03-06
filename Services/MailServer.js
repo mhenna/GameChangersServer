@@ -27,3 +27,7 @@ function sendEmail(receiverEmail, Subject, Body) {
     }
   });
 }
+
+module.exports = {
+  sendEmail
+}

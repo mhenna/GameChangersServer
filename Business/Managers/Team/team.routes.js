@@ -9,4 +9,11 @@ const router = express.Router(); // eslint-disable-line new-cap
 
 router.route('/new')
   .post(validate(teamValidation.new),TeamManager.createTeam);
+
+router.route('/delete/member')
+  .post(validate(teamValidation.delete), TeamManager.deleteTeamMember);
+
+router.route('/add/member')
+  .post(validate(teamValidation.add), TeamManager.addTeamMember);
+
 module.exports = router;

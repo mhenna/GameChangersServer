@@ -23,7 +23,7 @@ router.route('/user')
 /** POST /users/forgot-password - Send a mail to reset the password of a user */
 router.route('/forgot-password')
   .post(validate(userValidation.forgotPassword), UserManager.forgotPassword);
-
+  
 /** POST /users/reset-password - Reset the password of the user */
 router.route('/reset-password')
   .post(validate(userValidation.resetPassword), UserManager.resetPassword);  

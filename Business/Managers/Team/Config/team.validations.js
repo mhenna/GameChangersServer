@@ -13,5 +13,19 @@ module.exports = {
       teamName: Joi.string().required(),
       members: Joi.array().items(user).required()
     }
-  }
+  },
+
+  // POST /delete/member
+  delete: {
+    body: {
+      email: Joi.string().regex(new RegExp(config.emailRegex)).required()
+    }
+  },
+  
+    // POST /add/member
+    add: {
+      body: {
+        email: Joi.string().regex(new RegExp(config.emailRegex)).required()
+      }
+    }
 };
