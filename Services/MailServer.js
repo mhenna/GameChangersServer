@@ -1,21 +1,19 @@
 const nodemailer = require('nodemailer');
-const env = require('node-env-file');
-env('Credentials.env');
 
 const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 465,
-  secure: true,
-  auth: {
-    type: 'OAuth2',
-    user: process.env.USER,
-    accessToken: process.env.ACCESS_TOKEN
+  host:"smtp.isus.emc.com",
+  port: 25,
+  secureConnection: false, // TLS requires secureConnection to be false
+  secure:false,
+  tls: {
+      ciphers:'SSLv3',
+      rejectUnauthorized:false
   }
 });
 
 function sendEmail(receiverEmail, Subject, Body) {
   const mailOptions = {
-    from: process.env.USER,
+    from: "game-changers@dell.com",
     to: receiverEmail,
     subject: Subject,
     text: Body
@@ -29,4 +27,3 @@ function sendEmail(receiverEmail, Subject, Body) {
     }
   });
 }
-sendEmail('dalia.mostafa@emc.com', 'subject2', 'body');
