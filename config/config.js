@@ -9,7 +9,8 @@ const config = {
   env: envVars.NODE_ENV,
   jwtSecret: envVars.JWT_SECRET,
   port: envVars.PORT,
-  emailRegex: envVars.EMAIL_REGEX
+  emailRegex: envVars.EMAIL_REGEX,
+  frontEndUrl: envVars.FRONTEND_URL
 };
 
 export default config;

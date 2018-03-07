@@ -12,22 +12,25 @@ const transporter = nodemailer.createTransport({
 });
 
 function sendEmail(receiverEmail, Subject, Body) {
-  const mailOptions = {
-    from: "game-changers@dell.com",
-    to: receiverEmail,
-    subject: Subject,
-    text: Body
-  };
+  return new Promise((resolve, reject) => {
+    const mailOptions = {
+      from: "game-changers@dell.com",
+      to: receiverEmail,
+      subject: Subject,
+      text: Body
+    };
 
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      console.log(error);
-    } else {
-      console.log(`Email sent: ${info.response}`);
-    }
-  });
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(`Email sent: ${info.response}`);
+      }
+    });
+  })
+  
 }
 
 module.exports = {
   sendEmail
-}
+};

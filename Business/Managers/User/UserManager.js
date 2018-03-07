@@ -4,6 +4,7 @@ import async from 'async';
 import crypto from 'crypto';
 import config from '../../../config/config';
 import bcrypt from 'bcrypt';
+import mailService from '../../../Services/MailServer';
 
 function registerUser(req, res) {
   var user = new User(req.body);
@@ -90,7 +91,6 @@ function loginUser(req, res, next) {
 function getUser(req, res, err) {
   res.send(req.user);
 }
-
 function forgotPassword(req, res, next) {
   async.waterfall([
     (done) => {
@@ -121,7 +121,13 @@ function forgotPassword(req, res, next) {
       /**
        * TODO send a mail to the user containing the token.
        */
-      return res.status(200).json({ message: "TODO send the token to user's email", token });
+      let body = `Dear ${user.name} ,
+        Please follow this link to reset your password ${config.frontEndUrl}/reset-password?token=${token}
+    Regards,
+      `;
+      mailService.sendEmail(user.email, "Password reset", body)
+        .then(message => res.status(200).json({ message }))
+        .catch(error => res.status(500).json({ message: error }));
     }
   ], (err) => {
     return res.status(422).json({ message: err });
