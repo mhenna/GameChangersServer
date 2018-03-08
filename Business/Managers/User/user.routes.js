@@ -20,6 +20,10 @@ router.route('/signup')
 router.route('/user')
   .get(expressJwt({ secret: config.jwtSecret }), UserManager.getUser);
 
+// get the current user;s team status object
+// router.route('/team')
+// .get(expressJwt({ secret: config.jwtSecret }), UserManager.getTeamStatus);
+
 /** POST /users/forgot-password - Send a mail to reset the password of a user */
 router.route('/forgot-password')
   .post(validate(userValidation.forgotPassword), UserManager.forgotPassword);

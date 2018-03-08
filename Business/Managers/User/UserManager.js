@@ -91,6 +91,12 @@ function loginUser(req, res, next) {
 function getUser(req, res, err) {
   res.send(req.user);
 }
+
+// function getTeamStatus(req, res, err) {
+//   console.log
+//   res.send(req.user);
+// }
+
 function forgotPassword(req, res, next) {
   async.waterfall([
     (done) => {
@@ -177,4 +183,5 @@ module.exports = {
   loginUser,
   getUser,
   authenticate
+  // getTeamStatus
 };

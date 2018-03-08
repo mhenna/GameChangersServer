@@ -11,9 +11,7 @@ function createTeam(req, res, next) {
         return;
     }
     let team = new Team({ name: req.body.teamName, creator: req.user._id, members: req.body.members });
-    for (let i = 0; i < team.members.length; i++) {
-          team.members[i].accepted = false;
-    }
+    
     team.save(function (err){
       if(err) {
         const uniqueColumnKey = Object.keys(err.errors)[0];
@@ -24,9 +22,18 @@ function createTeam(req, res, next) {
         for (let i = 0; i < req.body.members.length; i++) {
           MailService.sendEmail(req.body.members[i].email, '*title*', '*body*');
         }
-        res.status(200).json({
-          status: '200',
-          statustext: 'Ok'
+        User.findOneAndUpdate({ _id: req.user._id }, { $set: { creatorOf: req.body.teamName } }, { new: true } , function(err, doc) {
+          if (err) {
+            console.log("ERR --> ", err);
+            Utils.send400("ERROR UPDATING USER");
+          }
+          else {
+            console.log("DOC --> ", doc);
+            res.status(200).json({
+              status: '200',
+              statustext: 'Ok'
+            });
+          }
         });
       }
     });
@@ -54,7 +61,7 @@ function createTeam(req, res, next) {
         Utils.send400('A team cannot have less than two members.',res);
         return
       } 
-      Team.findOneAndUpdate({ creator: req.user._id }, { $set: { members: newMembers } }, function(err, doc){
+      Team.findOneAndUpdate({ creator: req.user._id }, { $set: { members: newMembers } }, { new: true }, function(err, doc){
         if(err){
             console.log("ERR --> ", err);
             Utils.send400('Cannot perform operation -delete member from team-.', res);
@@ -69,7 +76,8 @@ function createTeam(req, res, next) {
         });
         res.status(200).json({
           status: '200',
-          statustext: 'Ok'
+          statustext: 'Ok',
+          team: doc
         });
       });
     });
@@ -90,7 +98,7 @@ function createTeam(req, res, next) {
       }
       team.members.push({ email: req.body.email, accepted: false });
 
-      Team.findOneAndUpdate({ creator: req.user._id }, { $set: { members: team.members } }, function(err, doc){
+      Team.findOneAndUpdate({ creator: req.user._id }, { $set: { members: team.members } }, { new: true }, function(err, doc){
         if(err){
             console.log("ERR --> ", err);
             Utils.send400('Cannot perform operation -add member to team-.', res);
@@ -100,14 +108,32 @@ function createTeam(req, res, next) {
         MailService.sendEmail(req.body.email, 'Sa3eeda', 'Sa3eeda Body from https://www.google.com');
         res.status(200).json({
           status: '200',
-          statustext: 'Ok'
+          statustext: 'Ok',
+          team: doc
         });
       });
     });
   }
 
+  function viewTeamMembers(req, res, next) {
+    Team.findOne({ creator: req.user._id }, (err, team) => {
+      if (err) { 
+        console.log("ERR --> ", err);
+        Utils.send400('User does not have a team.', res); 
+        return;
+      }
+      console.log("TEAM --> ", team);
+      res.status(200).json({
+        status: '200',
+        statustext: 'Ok',
+        team: team
+      });
+    })
+  }
+
   module.exports = {
     createTeam,
     deleteTeamMember,
-    addTeamMember
+    addTeamMember,
+    viewTeamMembers
   };

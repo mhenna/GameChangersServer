@@ -16,4 +16,7 @@ router.route('/delete/member')
 router.route('/add/member')
   .post(validate(teamValidation.add), TeamManager.addTeamMember);
 
+router.route('/view/member')
+  .get(TeamManager.viewTeamMembers);
+
 module.exports = router;
