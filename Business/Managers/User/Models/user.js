@@ -30,8 +30,8 @@ const userSchema = new mongoose.Schema({
   },
     // this attributes shows if the user belongs to a team or not
   teamMember: {
-    type: Boolean,
-    default: 0
+    type: String,
+    default: '-1'
   },
   //this attribute shows if the user is a creator of a team or not, if yes, the id of the team will be input
   creatorOf: {

@@ -20,6 +20,9 @@ router.route('/signup')
 router.route('/user')
   .get(expressJwt({ secret: config.jwtSecret }), UserManager.getUser);
 
+router.route('/fetch/user')
+  .post(expressJwt({ secret: config.jwtSecret }), UserManager.getAnotherUser);
+
 // get the current user;s team status object
 // router.route('/team')
 // .get(expressJwt({ secret: config.jwtSecret }), UserManager.getTeamStatus);

@@ -24,11 +24,9 @@ function createTeam(req, res, next) {
         }
         User.findOneAndUpdate({ _id: req.user._id }, { $set: { creatorOf: req.body.teamName } }, { new: true } , function(err, doc) {
           if (err) {
-            console.log("ERR --> ", err);
             Utils.send400("ERROR UPDATING USER");
           }
           else {
-            console.log("DOC --> ", doc);
             res.status(200).json({
               status: '200',
               statustext: 'Ok'
@@ -63,13 +61,11 @@ function createTeam(req, res, next) {
       } 
       Team.findOneAndUpdate({ creator: req.user._id }, { $set: { members: newMembers } }, { new: true }, function(err, doc){
         if(err){
-            console.log("ERR --> ", err);
             Utils.send400('Cannot perform operation -delete member from team-.', res);
             return;
         }
         User.findOneAndUpdate({ email: req.body.email }, { $set: { teamMember: 0 } }, function(err, user) {
           if(err) {
-            console.log("ERR --> ", err);
             Utils.send400('Cannot perform operation -default value for team member-.', res);
             return;
           }
@@ -86,7 +82,6 @@ function createTeam(req, res, next) {
   function addTeamMember(req, res, next) {
     Team.findOne({ creator: req.user._id }, (err, team) => {
       if (err) { 
-        console.log("ERR --> ", err);
         Utils.send400('User does not have a team.', res); 
         return;
       }
@@ -100,7 +95,6 @@ function createTeam(req, res, next) {
 
       Team.findOneAndUpdate({ creator: req.user._id }, { $set: { members: team.members } }, { new: true }, function(err, doc){
         if(err){
-            console.log("ERR --> ", err);
             Utils.send400('Cannot perform operation -add member to team-.', res);
             return;
         }
@@ -118,11 +112,23 @@ function createTeam(req, res, next) {
   function viewTeamMembers(req, res, next) {
     Team.findOne({ creator: req.user._id }, (err, team) => {
       if (err) { 
-        console.log("ERR --> ", err);
         Utils.send400('User does not have a team.', res); 
         return;
       }
-      console.log("TEAM --> ", team);
+      res.status(200).json({
+        status: '200',
+        statustext: 'Ok',
+        team: team
+      });
+    })
+  }
+
+  function viewTeam(req, res, next) {
+    Team.findOne({ name: req.user.teamMember }, (err, team) => {
+      if (err) { 
+        Utils.send400('User does not have a team.', res); 
+        return;
+      }
       res.status(200).json({
         status: '200',
         statustext: 'Ok',
@@ -135,5 +141,6 @@ function createTeam(req, res, next) {
     createTeam,
     deleteTeamMember,
     addTeamMember,
-    viewTeamMembers
+    viewTeamMembers,
+    viewTeam
   };

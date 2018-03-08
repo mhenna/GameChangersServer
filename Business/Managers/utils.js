@@ -1,6 +1,6 @@
 function send400(message, res)
 {
-  res.status(400).json({
+  res.json({
     status: '400',
     statustext: 'Failed',
     errors: [{

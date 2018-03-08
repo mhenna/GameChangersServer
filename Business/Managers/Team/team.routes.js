@@ -19,4 +19,7 @@ router.route('/add/member')
 router.route('/view/member')
   .get(TeamManager.viewTeamMembers);
 
+router.route('/view/team')
+  .get(TeamManager.viewTeam);
+
 module.exports = router;

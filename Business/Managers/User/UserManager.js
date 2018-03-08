@@ -1,5 +1,6 @@
 const User = require('../User/Models/user');
 const jwt = require('jsonwebtoken');
+const MailService = require('../../../Services/MailServer');
 import async from 'async';
 import crypto from 'crypto';
 import config from '../../../config/config';
@@ -24,6 +25,8 @@ function registerUser(req, res) {
       })
     }
     else {
+        MailService.sendEmail(req.body.email, 'Registration for game changers',
+            'Register now for game changers through the following link: ' + 'http://localhost:4200/users/authenticate');
         return res.status(200).json({
         status : '200',
         message: 'Success',
@@ -175,6 +178,20 @@ function resetPassword(req, res, next) {
   });
 }
 
+function getAnotherUser(req, res, next) {
+  User.findOne({ _id: req.body.id }, (err, user) => {
+    if (err) {
+      send400("User does not exist.");
+      return;
+    }
+    res.status(200).json({
+      success: true,
+      message: 'Authentication successfull',
+      user: user
+    });
+  })
+}
+
 module.exports = {
   registerUser,
   loginUser,
@@ -182,6 +199,6 @@ module.exports = {
   resetPassword,
   loginUser,
   getUser,
-  authenticate
-  // getTeamStatus
+  authenticate,
+  getAnotherUser
 };
