@@ -13,6 +13,7 @@ import config from './config';
 import UserManager from '../Business/Managers/User/UserManager';
 import userRoutes from '../Business/Managers/User/user.routes';
 import teamRoutes from '../Business/Managers/Team/team.routes';
+import ideaRoutes from '../Business/Managers/Idea/idea.routes';
 import expressJwt from 'express-jwt';
 
 
@@ -55,6 +56,8 @@ app.post('/register', (req, res) => { UserManager.registerUser(req); });
 // mount user routes at /users
 app.use('/users', userRoutes);
 app.use('/teams', expressJwt({secret: config.jwtSecret}), teamRoutes);
+app.use('/ideas', expressJwt({secret: config.jwtSecret}), ideaRoutes);
+
 
 // error handler
 app.use((err, req, res, next) => {

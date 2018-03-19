@@ -14,10 +14,12 @@ function createTeam(req, res, next) {
     
     team.save(function (err){
       if(err) {
+        console.log("ERROR SAVING TEAM")
         const uniqueColumnKey = Object.keys(err.errors)[0];
         Utils.send400(err.errors[uniqueColumnKey].message, res);
         return;
       }else {
+        console.log("SAVING TEAM")
         // TODO: send proper email title and body
         for (let i = 0; i < req.body.members.length; i++) {
           MailService.sendEmail(req.body.members[i].email, '*title*', '*body*');
