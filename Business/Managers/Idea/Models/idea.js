@@ -9,6 +9,14 @@ const ideaSchema = new mongoose.Schema({
     title: {
         type: String, 
         required: true
+    },
+    challenge: {
+        type: String,
+        required: true
+    },
+    filename: {
+        type: String, 
+        required: true
     }
 });
 

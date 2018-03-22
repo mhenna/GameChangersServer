@@ -17,4 +17,8 @@ router.route('/upload')
 
   router.route('/')
   .get(IdeaManager.getIdea);
+
+  router.route('/edit')
+  .post(IdeaManager.editIdea);
+
   module.exports = router;

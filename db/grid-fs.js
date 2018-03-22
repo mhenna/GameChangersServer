@@ -2,19 +2,19 @@ var gridfs = require('gridfs-stream');
 var fs = require('fs');
 const mongoose = require('mongoose');
 const Idea  = require('../Business/Managers/Idea/Models/idea');
-
 gridfs.mongo = mongoose.mongo;
 var connection = mongoose.connection;
 const Utils = require('../Business/Managers/utils')
+var mime = require('mime-types')
 
 function write(req, res){
     var gfs = gridfs(connection.db);
     var part = req.files.file;
     
     var writeStream = gfs.createWriteStream({
-        filename: req.user.teamMember,
+        filename: req.user.teamMember + req.body.extension,
         mode: 'w',
-        content_type:part.mimetype, 
+        content_type: mime.lookup(req.body.extension), 
         metadata:{
             encoding: part.encoding
         },
@@ -24,37 +24,18 @@ function write(req, res){
     writeStream
     .on('close', function() {
         var team = req.user.teamMember;
-        Idea.findOne({ teamName: team }, (err, ret) => {
-            if (err) { 
-            Utils.send400(err, res); 
-            return;
+        let idea = new Idea({title: req.body.title, teamName: team, challenge: req.body.challenge});
+        Idea.update({ teamName: team }, {filename: req.user.teamMember + req.body.extension, title: req.body.title, teamName: team, challenge: req.body.challenge}, { new: true, upsert: true }, function(err, doc){
+            if(err){
+                Utils.send400('Cannot perform operation.', res);
+                return;
             }
-            if(ret)
-            {
-                Utils.send400("This team has already submitted an idea",res);
-                return
-            }else{
-                let idea = new Idea({title: req.body.title, teamName: team, challenge: req.body.challenge});
-                idea.save((err, idea) =>{
-                    if(err) {
-                        Utils.send400(err, res)
-                        return;
-                    }
-                    if(!idea) 
-                    {
-                        res.status(500).json({
-                            status: '500',
-                            message: 'Internal server error'
-                        })
-                    }else {
-                        res.status(200).send({
-                            message: 'Success'
-                        });               
-                    }
-                }
-            );
-            }
-        });
+            res.status(200).json({
+              status: '200',
+              statustext: 'Ok',
+              idea: doc
+            });
+          });
         return;
     })
     .on('error', function(err){
@@ -91,13 +72,15 @@ function read(req, res){
 
 function remove(req, res){ 
     var gfs = gridfs(connection.db);
-    gfs.exist({ filename: req.user.teamMember }, function (err, file) {
+    console.log(req.body.oldName);
+    gfs.exist({ filename: req.body.oldName }, function (err, file) {
         if (err) {
+            console.log('errorrr')
             Utils.send400(err, res);
         } else if(!file) {
             return;
         } else {
-            gfs.remove({ filename: req.user.teamMember}, function (err) {
+            gfs.remove({ filename: req.body.oldName}, function (err) {
                 if (err) {
                     Utils.send400(err, res);
                 }
