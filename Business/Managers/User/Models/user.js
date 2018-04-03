@@ -14,14 +14,14 @@ const userSchema = new mongoose.Schema({
   },
   region:{
     type: String,
-    required: true
+//    required: true
   },
   password: {
     type: String,
     required: true
   },
   brief: {
-    default: 'This used did not add any bio',
+    default: 'This user did not add any bio',
     type: String
   },
   position: {
@@ -40,11 +40,11 @@ const userSchema = new mongoose.Schema({
   },
   careerLevel: {
     type: String,
-    required: true
+//    required: true
   },
   isRemote: {
     type: Boolean,
-    required: true
+  //  required: true
   },
   location: {
     type: String,
@@ -55,7 +55,7 @@ const userSchema = new mongoose.Schema({
   },
   genNextMember: {
     type: Boolean,
-    required: true
+    //required: true
   },
   previousParticipation: {
     type: Boolean,
@@ -64,7 +64,7 @@ const userSchema = new mongoose.Schema({
   ideasOrder: {
         // type: String,
     type: [],
-    required: true
+    //required: true
   },
   isAuthenticated: {
     type : Boolean,

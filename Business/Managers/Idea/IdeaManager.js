@@ -39,7 +39,7 @@ function editIdea(req, res)
     
     Idea.findOne({ teamName: req.user.teamMember}, (err, ret) => {
         if (err) { 
-        Utils.send400(err, res); 
+        	Utils.send400(err, res); 
         return;
         }
         if(!ret)

@@ -2,6 +2,8 @@ const express = require('express');
 const TeamManager = require('./TeamManager');
 const teamValidation = require('./Config/team.validations');
 const validate = require('express-validation');
+import expressJwt from 'express-jwt';
+import config from '../../../config/config'
 
 
 
@@ -20,6 +22,6 @@ router.route('/view/member')
   .get(TeamManager.viewTeamMembers);
 
 router.route('/view/team')
-  .get(TeamManager.viewTeam);
+  .get(expressJwt({ secret: config.jwtSecret }), TeamManager.viewTeam);
 
 module.exports = router;

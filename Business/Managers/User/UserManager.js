@@ -12,6 +12,7 @@ function registerUser(req, res) {
   user.save((err, user) =>{
     if(err)
     {
+      console.log(err)
       return res.status(409).json({
         status: '409',
         message: 'User already exists'
@@ -25,9 +26,10 @@ function registerUser(req, res) {
       })
     }
     else {
-        MailService.sendEmail(req.body.email, 'Registration for game changers',
-            'Register now for game changers through the following link: ' + 'http://localhost:4200/users/authenticate');
+        MailService.sendEmail(req.body.email, 'Account Creation for Game Changers',
+            'Your account for game changers has been created with the following credentials:\nemail: ' + req.body.email + '\npassword: '+ req.body.password + '\nYou can login at: http://ias00nan5eba.corp.emc.com/gamechanger/');
         return res.status(200).json({
+
         status : '200',
         message: 'Success',
         body: user._id
@@ -202,3 +204,4 @@ module.exports = {
   authenticate,
   getAnotherUser
 };
+

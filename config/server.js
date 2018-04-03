@@ -55,13 +55,12 @@ if (config.env === 'development') {
 app.post('/register', (req, res) => { UserManager.registerUser(req); });
 // mount user routes at /users
 app.use('/users', userRoutes);
-app.use('/teams', expressJwt({secret: config.jwtSecret}), teamRoutes);
 app.use('/ideas', expressJwt({secret: config.jwtSecret}), ideaRoutes);
-
+app.use('/teams', teamRoutes);
 
 // error handler
 app.use((err, req, res, next) => {
-  res.status(400).json(err);
+  res.status(404).json(err);
 });
 
 export default app;

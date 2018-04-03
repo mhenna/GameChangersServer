@@ -25,7 +25,7 @@ function write(req, res){
     .on('close', function() {
         var team = req.user.teamMember;
         let idea = new Idea({title: req.body.title, teamName: team, challenge: req.body.challenge});
-        Idea.update({ teamName: team }, {filename: req.user.teamMember + req.body.extension, title: req.body.title, teamName: team, challenge: req.body.challenge}, { new: true, upsert: true }, function(err, doc){
+        Idea.update({ teamName: team }, {filename: req.user.teamMember + req.body.extension, oldFilename: req.body.oldFilename, title: req.body.title, teamName: team, challenge: req.body.challenge}, { new: true, upsert: true }, function(err, doc){
             if(err){
                 Utils.send400('Cannot perform operation.', res);
                 return;

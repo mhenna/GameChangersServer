@@ -10,7 +10,7 @@ function createTeam(req, res, next) {
         Utils.send400('Maximum team size is 6', res);
         return;
     }
-    let team = new Team({ name: req.body.teamName, creator: req.user._id, members: req.body.members });
+    let team = new Team({ name: req.body.teamName, creator: req.body.creator, members: req.body.members });
     
     team.save(function (err){
       if(err) {
@@ -21,19 +21,9 @@ function createTeam(req, res, next) {
       }else {
         console.log("SAVING TEAM")
         // TODO: send proper email title and body
-        for (let i = 0; i < req.body.members.length; i++) {
-          MailService.sendEmail(req.body.members[i].email, '*title*', '*body*');
-        }
-        User.findOneAndUpdate({ _id: req.user._id }, { $set: { creatorOf: req.body.teamName } }, { new: true } , function(err, doc) {
-          if (err) {
-            Utils.send400("ERROR UPDATING USER");
-          }
-          else {
-            res.status(200).json({
+        res.status(200).json({
               status: '200',
               statustext: 'Ok'
-            });
-          }
         });
       }
     });
@@ -126,17 +116,21 @@ function createTeam(req, res, next) {
   }
 
   function viewTeam(req, res, next) {
-    Team.findOne({ name: req.user.teamMember }, (err, team) => {
+     
+     console.log('MEMBERR: ', req.user.teamMember)
+     Team.findOne({ name: req.user.teamMember }, (err, team) => {
       if (err) { 
+        console.log(err)
         Utils.send400('User does not have a team.', res); 
         return;
       }
+      console.log('hereee', team);
       res.status(200).json({
         status: '200',
         statustext: 'Ok',
         team: team
       });
-    })
+   })
   }
 
   module.exports = {

@@ -17,6 +17,9 @@ const ideaSchema = new mongoose.Schema({
     filename: {
         type: String, 
         required: true
+    },
+    oldFilename: {
+        type: String
     }
 });
 
