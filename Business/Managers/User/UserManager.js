@@ -75,7 +75,8 @@ function loginUser(req, res, next) {
           res.status(200).json({
             success: true,
             message: 'Authentication successfull',
-            token
+            token,
+            isJudge: user.toJSON().isJudge
           });
         } else {
           res.status(401).json({

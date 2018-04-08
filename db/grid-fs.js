@@ -58,6 +58,8 @@ function read(req, res){
             return;  
         } 
         else{
+            res.header('Content-Type',mime.lookup(req.body.file) )
+            // res.setContentType(mime.lookup(req.body.file));
             gfs.createReadStream({
                 filename: req.body.file
             }).pipe(res)

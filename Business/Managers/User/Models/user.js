@@ -46,6 +46,10 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
   //  required: true
   },
+  isJudge: {
+    type: Boolean,
+    default: false
+  },
   location: {
     type: String,
     required: true
@@ -62,7 +66,7 @@ const userSchema = new mongoose.Schema({
     required: true
   },
   ideasOrder: {
-        // type: String,
+    // type: String,
     type: [],
     //required: true
   },

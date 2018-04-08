@@ -18,6 +18,9 @@ const ideaSchema = new mongoose.Schema({
         type: String, 
         required: true
     },
+    judgments: {
+        type: []
+    },
     oldFilename: {
         type: String
     }

@@ -79,7 +79,13 @@ function getIdea(req, res) {
             res.status(200).json({
                 status: '200',
                 statustext: 'Ok',
-                idea: ret
+                idea: {
+                    title: ret.title,
+                    teamName: ret.teamName,
+                    challenge: ret.challenge,
+                    filename: ret.filename,
+                    oldFilename: ret.oldFilename
+                }
               });
             return
         }else {
