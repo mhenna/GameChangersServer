@@ -15,7 +15,10 @@ function upload(req, res) {
 }
 
 function download(req, res){
-    gridfs.read(req, res);
+    if(req.user.isJudge || req.user.teamMember + '.' + mime.extension(mime.lookup(req.body.file)) == req.body.file)
+        gridfs.read(req, res);
+    else
+        Utils.send400("Unauthorized",res);
 }
 
 function createIdea(req, res){
