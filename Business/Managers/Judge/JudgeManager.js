@@ -16,6 +16,10 @@ function  getIdeas(req, res, next) {
         }
         var final = []
         var index = 0;
+        if(!ideas[0]) {
+            res.json({});
+            return;
+        }
         (ideas[0].ideasId).forEach((idea)=>{
             Idea.find({_id: idea}, 'teamName challenge title judgments', function(err, ret){
                 let currScore = -1;
@@ -30,7 +34,10 @@ function  getIdeas(req, res, next) {
                 let feasibilityScore = -1
                 let qualityScore = -1
                 console.log("JUDGE",ret[0]);
-            
+                if(!ret[0].judgments) {
+                    res.json({});
+                    return;
+                }
                 (ret[0].judgments).forEach((tempRet) =>{
                     console.log(tempRet.judgeId, req.user._id)
                     if(tempRet.judgeId == req.user._id) {
@@ -73,8 +80,6 @@ function  getIdeas(req, res, next) {
                 }
             });
         });
-        // res.json({});
-        // return;
     });
 }
 
