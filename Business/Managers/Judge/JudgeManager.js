@@ -2,6 +2,7 @@ const User = require('../User/Models/user');
 const Idea  = require('../Idea/Models/idea');
 const Utils = require('../utils');
 const Judgment = require('./Models/judgment');
+import config from '../../../config/config';
 
 function  getIdeas(req, res, next) {
     var currJudgeId = req.user._id;
@@ -207,8 +208,48 @@ function submitJudgment(req, res, next) {
         });
     });
 }
+
+function assignIdeatoJudge(req, res) {
+    
+    console.log("Is admin?: ", req.user.email, req.user.email != config.admin)
+    if(req.user.email != config.admin) {
+        Utils.send400("Unauthorized", res);
+        return;
+    }
+    Judgment.find({judgeId: req.body.judgeId} ,function(err, judgment) {
+        if(err) {
+            console.log("ERR1: ", err)
+            Utils.send400(err, res);
+            return;    
+        }
+
+        if(!judgment) {
+            Utils.send400("Invalid Judge Id", res);
+            return;         
+        }
+        if(judgment[0].ideasId.indexOf(req.body.ideaId) > -1) {
+            Utils.send400('Idea already assigned to this judge', res);
+            return;
+        } 
+        var ideas = judgment[0].ideasId.slice()
+
+        ideas.push(req.body.ideaId);
+        Judgment.update({ judgeId: req.body.judgeId }, {ideasId: ideas}, { new: true}, function(err, doc){
+            if(err) {
+                console.log("err: ", err);
+                Utils.send400(err, res);
+                return;    
+            }
+            res.status(200).json({
+                status: '200',
+                statustext: 'Ok'
+            });
+        });
+    });
+}
 module.exports = {
     getIdeas,
     submitJudgment,
-    getIdea
+    getIdea,
+    assignIdeatoJudge
 };

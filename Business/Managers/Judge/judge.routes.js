@@ -16,5 +16,7 @@ router.route('/ideas/:id')
 router.route('/submit')
   .post(validate(judgmentValidations.submit), JudgeManager.submitJudgment);
 
+router.route('/assign-judge')
+  .post(validate(judgmentValidations.assign), JudgeManager.assignIdeatoJudge);
 
 module.exports = router;

@@ -17,6 +17,12 @@ module.exports = {
             feasibilityScore: Joi.number().required(),
             qualityScore: Joi.number().required()
         }
-      }
+      },
+    assign: {
+        body: {
+            ideaId:  Joi.string().required(),
+            judgeId: Joi.string().required()
+        }
+    }
   };
   

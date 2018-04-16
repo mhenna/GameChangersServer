@@ -33,7 +33,10 @@ router.route('/forgot-password')
   
 /** POST /users/reset-password - Reset the password of the user */
 router.route('/reset-password')
-  .post(validate(userValidation.resetPassword), UserManager.resetPassword);  
+  .post(validate(userValidation.resetPassword), UserManager.resetPassword); 
+  
+router.route('/create-judge')
+  .post(expressJwt({ secret: config.jwtSecret }), validate(userValidation.createJudge), UserManager.createJudge); 
 
 /** GET /users/protected-route - Example of how to protect an endpoint */
 router.route('/protected-route')

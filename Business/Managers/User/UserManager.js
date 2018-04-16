@@ -1,4 +1,5 @@
 const User = require('../User/Models/user');
+const Judgment = require('../Judge/Models/judgment')
 const jwt = require('jsonwebtoken');
 const MailService = require('../../../Services/MailServer');
 import async from 'async';
@@ -6,6 +7,7 @@ import crypto from 'crypto';
 import config from '../../../config/config';
 import bcrypt from 'bcrypt';
 import mailService from '../../../Services/MailServer';
+const Utils = require('../utils')
 
 function registerUser(req, res) {
   var user = new User(req.body);
@@ -195,6 +197,59 @@ function getAnotherUser(req, res, next) {
   })
 }
 
+function createJudge(req, res, next) {
+
+  console.log("Is Admin in create Judge?:", req.user.email, req.user.email != config.admin)
+  if(req.user.email != config.admin) {
+    Utils.send400("Unauthorized", res);
+    return;
+  }
+  var user = new User(req.body);
+  user.isJudge = true;
+  user.position = "Judge"
+  user.previousParticipation = "no"
+  
+  user.save((err, user) =>{
+    if(err)
+    {
+      console.log(err)
+      return res.status(409).json({
+        status: '409',
+        message: 'Judge already exists'
+      })
+    }
+    if(!user) 
+    {
+      return res.status(500).json({
+        status: '500',
+        message: 'Internal server error'
+      })
+    }
+    else {
+      var judgment = new Judgment({judgeId: user._id, ideasID: []});
+      judgment.save( (err, judgment) => {
+        if(err) {
+          console.log(err);
+          Utils.send400("Internal Server Error " + err, res);
+          return;
+        }
+        if(!judgment) {
+          return res.status(500).json({
+            status: '500',
+            message: 'Internal server error'
+          })
+        }else {
+          return res.status(200).json({
+            status : '200',
+            message: 'Success',
+            body: user._id
+          })
+        }
+      });
+    }
+  });
+}
+
 module.exports = {
   registerUser,
   loginUser,
@@ -203,6 +258,7 @@ module.exports = {
   loginUser,
   getUser,
   authenticate,
-  getAnotherUser
+  getAnotherUser,
+  createJudge,
 };
 

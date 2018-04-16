@@ -11,7 +11,8 @@ const config = {
   port: envVars.PORT,
   emailRegex:  envVars.EMAIL_REGEX,
   frontEndUrl: envVars.FRONTEND_URL,
-  dbName:      envVars.DB_NAME
+  dbName:      envVars.DB_NAME,
+  admin:       envVars.ADMIN
 };
 
 export default config;

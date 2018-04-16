@@ -25,6 +25,16 @@ module.exports = {
       //ideasOrder: Joi.array().required()
     }
   },
+  createJudge: {
+    body: {
+      name: Joi.string().min(1).required(),
+      email: [Joi.string().required(), Joi.string().regex(/^[a-zA-Z0-9_.+-]+@(?:(?:[a-zA-Z0-9-]+\.)?[a-zA-Z]+\.)?(dell|emc|virtustream|rsa|pivotal|secureworks)\.com$/)],
+      password: Joi.string().min(1).required(),
+      passConf: Joi.string().min(1).required(),
+      region: Joi.string().min(1).required(),
+      location: Joi.string().min(1).required(),
+    }
+  },
   resetPassword: {
     body: {
       newPassword: Joi.string().required(),
