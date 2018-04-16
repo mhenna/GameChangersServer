@@ -21,4 +21,6 @@ router.route('/upload')
   router.route('/edit')
   .post(IdeaManager.editIdea);
 
+  router.route('/admin-ideas')
+  .get(IdeaManager.getAllIdeas); 
   module.exports = router;

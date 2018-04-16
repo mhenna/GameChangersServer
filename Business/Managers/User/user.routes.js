@@ -38,6 +38,10 @@ router.route('/reset-password')
 router.route('/create-judge')
   .post(expressJwt({ secret: config.jwtSecret }), validate(userValidation.createJudge), UserManager.createJudge); 
 
+router.route('/get-judge')
+  .get(expressJwt({ secret: config.jwtSecret }), UserManager.getJudgeById); 
+router.route('/judges')
+  .get(expressJwt({ secret: config.jwtSecret }), UserManager.getAllJudges); 
 /** GET /users/protected-route - Example of how to protect an endpoint */
 router.route('/protected-route')
   .get(expressJwt({ secret: config.jwtSecret }), (req,res)=>{

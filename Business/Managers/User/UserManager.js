@@ -230,7 +230,7 @@ function createJudge(req, res, next) {
       judgment.save( (err, judgment) => {
         if(err) {
           console.log(err);
-          Utils.send400("Internal Server Error " + err, res);
+          Utils.send400("Internal Server Error " + err.message, res);
           return;
         }
         if(!judgment) {
@@ -250,6 +250,63 @@ function createJudge(req, res, next) {
   });
 }
 
+function getJudgeById(req, res) {
+  console.log("Is admin?: ", req.user.email, req.user.email != config.admin)
+  if(req.user.email != config.admin) {
+      Utils.send400("Unauthorized", res);
+      return;
+  }
+
+  User.findById(req.query.judgeId, 'name isJudge email', (err, user) => {
+    if(err) {
+      console.log("err: ", err.message);
+      Utils.send400(err.message, res);
+      return
+    }
+    if(!user) {
+      console.log("err2: ", "not user");
+      Utils.send400("Internal server error", res);
+      return
+    }
+
+    if(!user.isJudge) {
+      Utils.send400("This User is not a judge", res);
+      return
+    }
+
+    return res.status(200).json({
+      status : '200',
+      message: 'Success',
+      body: user
+    })
+  })
+}
+
+function getAllJudges(req, res) {
+  console.log("Is admin?: ", req.user.email, req.user.email != config.admin)
+  if(req.user.email != config.admin) {
+      Utils.send400("Unauthorized", res);
+      return;
+  }
+
+  User.find({isJudge: true}, 'name isJudge email', (err, user) => {
+    if(err) {
+      console.log("err: ", err.message);
+      Utils.send400(err.message, res);
+      return
+    }
+    if(!user) {
+      console.log("err2: ", "not user");
+      Utils.send400("Internal server error", res);
+      return
+    }
+    return res.status(200).json({
+      status : '200',
+      message: 'Success',
+      body: user
+    })
+  })
+}
 module.exports = {
   registerUser,
   loginUser,
@@ -260,5 +317,7 @@ module.exports = {
   authenticate,
   getAnotherUser,
   createJudge,
+  getJudgeById,
+  getAllJudges
 };
 

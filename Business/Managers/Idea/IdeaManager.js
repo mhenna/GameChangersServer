@@ -5,6 +5,7 @@ const gridfs = require('../../../db/grid-fs')
 const app = express();
 const Idea  = require('../Idea/Models/idea');
 const mime = require('mime-types')
+import config from '../../../config/config';
 
 app.use(fileUpload());
 
@@ -96,10 +97,36 @@ function getIdea(req, res) {
         }
     });
 }
+
+function getAllIdeas(req, res) {
+    console.log("Is admin?: ", req.user.email, req.user.email != config.admin)
+    if(req.user.email != config.admin) {
+        Utils.send400("Unauthorized", res);
+        return;
+    }
+    Idea.find({}, (err, idea) => {
+      if(err) {
+        console.log("err: ", err.message);
+        Utils.send400(err.message, res);
+        return
+      }
+      if(!idea) {
+        console.log("err2: ", "not idea");
+        Utils.send400("Internal server error", res);
+        return
+      }
+      return res.status(200).json({
+        status : '200',
+        message: 'Success',
+        body: idea
+      })
+    })
+  }
 module.exports = {
 upload, 
 download, 
 createIdea, 
 getIdea,
-editIdea
+editIdea,
+getAllIdeas
 }
