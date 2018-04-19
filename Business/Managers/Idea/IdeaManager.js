@@ -4,6 +4,9 @@ const fileUpload = require('express-fileupload');
 const gridfs = require('../../../db/grid-fs')
 const app = express();
 const Idea  = require('../Idea/Models/idea');
+const Team  = require('../Team/Models/team');
+const User  = require('../User/Models/user');
+
 const mime = require('mime-types')
 import config from '../../../config/config';
 
@@ -98,7 +101,7 @@ function getIdea(req, res) {
     });
 }
 
-function getAllIdeas(req, res) {
+ function getAllIdeas(req, res) {
     console.log("Is admin?: ", req.user.email, req.user.email != config.admin)
     if(req.user.email != config.admin) {
         Utils.send400("Unauthorized", res);
@@ -115,13 +118,36 @@ function getAllIdeas(req, res) {
         Utils.send400("Internal server error", res);
         return
       }
-      return res.status(200).json({
-        status : '200',
-        message: 'Success',
-        body: idea
-      })
+        var index = 0;
+        var list = []
+        idea.forEach(value => {
+        const query =  Team.findOne({ name: value.teamName });
+        const team = query.exec( (err, team) => {
+            if(err) {
+                Utils.send400(err.message, res); 
+            }
+            User.findOne({_id: team.creator}, (err, user) => {
+                if(err) {
+                    Utils.send400(err.message, res); 
+                }
+                if(user) {
+                    var val =  value.toObject();
+                    val.location = user.location
+                    list.push(val)
+                }
+                index++;
+                if(index == idea.length) {
+                    return res.status(200).json({
+                        status : '200',
+                        message: 'Success',
+                        body: list
+                        })
+                    }
+                })
+            });
+        });    
     })
-  }
+}
 module.exports = {
 upload, 
 download, 

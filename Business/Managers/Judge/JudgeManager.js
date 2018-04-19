@@ -162,7 +162,7 @@ function getIdea(req,res,next) {
 
 function getJudgmentJson(req) {
     
-    return { judgeId: req.user._id, ideaId: req.body.ideaId, score:req.body.score, innovationComment: req.body.innovationComment, problemSolvingComment: req.body.problemSolvingComment, financialImpactComment: req.body.financialImpactComment, feasibilityComment:req.body.feasibilityComment, qualityComment: req.body.qualityComment, innovationScore: req.body.innovationScore, problemSolvingScore: req.body.problemSolvingScore, feasibilityScore: req.body.feasibilityScore, qualityScore: req.body.qualityScore, financialImpactScore: req.body.financialImpactScore};
+    return { judgeName: req.user.name, judgeId: req.user._id, ideaId: req.body.ideaId, score:req.body.score, innovationComment: req.body.innovationComment, problemSolvingComment: req.body.problemSolvingComment, financialImpactComment: req.body.financialImpactComment, feasibilityComment:req.body.feasibilityComment, qualityComment: req.body.qualityComment, innovationScore: req.body.innovationScore, problemSolvingScore: req.body.problemSolvingScore, feasibilityScore: req.body.feasibilityScore, qualityScore: req.body.qualityScore, financialImpactScore: req.body.financialImpactScore};
 }
 
 function submitJudgment(req, res, next) {
@@ -227,22 +227,46 @@ function assignIdeatoJudge(req, res) {
             Utils.send400("Invalid Judge Id", res);
             return;         
         }
-        if(judgment[0].ideasId.indexOf(req.body.ideaId) > -1) {
+        console.log(judgment)
+        var ideas = []
+        if(judgment[0] && judgment[0].ideasId.indexOf(req.body.ideaId) > -1) {
             Utils.send400('Idea already assigned to this judge', res);
             return;
         } 
-        var ideas = judgment[0].ideasId.slice()
+        if(judgment[0])
+            ideas = judgment[0].ideasId.slice()
 
         ideas.push(req.body.ideaId);
-        Judgment.update({ judgeId: req.body.judgeId }, {ideasId: ideas}, { new: true}, function(err, doc){
+        Judgment.update({ judgeId: req.body.judgeId }, {ideasId: ideas}, { new: true, upsert: true}, function(err, doc){
             if(err) {
                 console.log("err: ", err);
                 Utils.send400(err, res);
                 return;    
             }
-            res.status(200).json({
-                status: '200',
-                statustext: 'Ok'
+            Idea.find({_id: req.body.ideaId} ,function(err, ideas) {
+                if(err) {
+                    Utils.send400(err, res);
+                    return;    
+                }
+                var newJudgments = [{ judgeName: req.user.name, judgeId: req.user._id, ideaId: req.body.ideaId, score:-1}];
+                (ideas[0].judgments).forEach((ret)=>{
+                    if(ret.judgeId != req.body.judgeId) {
+                        newJudgments.push(ret);
+                    }
+                });
+                console.log(newJudgments);
+                ideas[0].judgments = newJudgments;
+                Idea.update({_id: req.body.ideaId}, ideas[0], function (err){
+                    if(err) {
+                        Utils.send400(err, res);
+                        return;
+                    }else {
+                        res.status(200).json({
+                            status: '200',
+                            statustext: 'Ok'
+                        });
+                    }
+                });
             });
         });
     });
