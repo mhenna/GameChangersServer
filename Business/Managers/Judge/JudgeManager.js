@@ -248,24 +248,28 @@ function assignIdeatoJudge(req, res) {
                     Utils.send400(err, res);
                     return;    
                 }
-                var newJudgments = [{ judgeName: req.user.name, judgeId: req.user._id, ideaId: req.body.ideaId, score:-1}];
-                (ideas[0].judgments).forEach((ret)=>{
-                    if(ret.judgeId != req.body.judgeId) {
-                        newJudgments.push(ret);
-                    }
-                });
-                console.log(newJudgments);
-                ideas[0].judgments = newJudgments;
-                Idea.update({_id: req.body.ideaId}, ideas[0], function (err){
+                User.findOne({_id: req.body.judgeId}, (err, user) => {
                     if(err) {
-                        Utils.send400(err, res);
-                        return;
-                    }else {
-                        res.status(200).json({
-                            status: '200',
-                            statustext: 'Ok'
-                        });
+                        Utils.send400(err.message, res); 
                     }
+                    var newJudgments = [{ judgeName: user.name, judgeId: req.body.judgeId, ideaId: req.body.ideaId, score:-1}];
+                    (ideas[0].judgments).forEach((ret)=>{
+                        if(ret.judgeId != req.body.judgeId) {
+                            newJudgments.push(ret);
+                        }
+                    });
+                    ideas[0].judgments = newJudgments;
+                    Idea.update({_id: req.body.ideaId}, ideas[0], function (err){
+                        if(err) {
+                            Utils.send400(err, res);
+                            return;
+                        }else {
+                            res.status(200).json({
+                                status: '200',
+                                statustext: 'Ok'
+                            });
+                        }
+                    });
                 });
             });
         });
