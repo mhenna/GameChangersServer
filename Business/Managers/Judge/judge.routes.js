@@ -10,7 +10,7 @@ const router = express.Router(); // eslint-disable-line new-cap
 router.route('/ideas')
   .get(JudgeManager.getIdeas);
 
-router.route('/ideas/:id')
+router.route('/ideas/:teamName')
   .get(JudgeManager.getIdea); 
 
 router.route('/submit')
@@ -18,5 +18,7 @@ router.route('/submit')
 
 router.route('/assign-judge')
   .post(validate(judgmentValidations.assign), JudgeManager.assignIdeatoJudge);
+
+
 
 module.exports = router;

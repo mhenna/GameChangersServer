@@ -97,7 +97,9 @@ function getIdea(req,res,next) {
         }
         var final = []
         var index = 0;
-            Idea.find({teamName: req.params.id}, '_id teamName challenge title judgments filename', function(err, ret){
+        console.log(ideas);
+        console.log(req.params.teamName);
+            Idea.find({teamName: req.params.teamName}, '_id teamName challenge title judgments filename', function(err, ret){
                 let currScore = -1;
                 let innovationComment =""
                 let problemSolvingComment = ""
@@ -110,7 +112,7 @@ function getIdea(req,res,next) {
                 let feasibilityScore = -1
                 let qualityScore = -1
                 let filename = "";
-                console.log("JUDGE",ret[0]);
+                console.log("JUDGE",ret);
             
                 (ret[0].judgments).forEach((tempRet) =>{
                     console.log(tempRet.judgeId, req.user._id)
@@ -162,7 +164,7 @@ function getIdea(req,res,next) {
 
 function getJudgmentJson(req) {
     
-    return { judgeName: req.user.name, judgeId: req.user._id, ideaId: req.body.ideaId, score:req.body.score, innovationComment: req.body.innovationComment, problemSolvingComment: req.body.problemSolvingComment, financialImpactComment: req.body.financialImpactComment, feasibilityComment:req.body.feasibilityComment, qualityComment: req.body.qualityComment, innovationScore: req.body.innovationScore, problemSolvingScore: req.body.problemSolvingScore, feasibilityScore: req.body.feasibilityScore, qualityScore: req.body.qualityScore, financialImpactScore: req.body.financialImpactScore};
+    return { judgeName: req.user.name,judgeEmail: req.user.email, judgeId: req.user._id, ideaId: req.body.ideaId, score:req.body.score, innovationComment: req.body.innovationComment, problemSolvingComment: req.body.problemSolvingComment, financialImpactComment: req.body.financialImpactComment, feasibilityComment:req.body.feasibilityComment, qualityComment: req.body.qualityComment, innovationScore: req.body.innovationScore, problemSolvingScore: req.body.problemSolvingScore, feasibilityScore: req.body.feasibilityScore, qualityScore: req.body.qualityScore, financialImpactScore: req.body.financialImpactScore};
 }
 
 function submitJudgment(req, res, next) {
@@ -252,7 +254,7 @@ function assignIdeatoJudge(req, res) {
                     if(err) {
                         Utils.send400(err.message, res); 
                     }
-                    var newJudgments = [{ judgeName: user.name, judgeId: req.body.judgeId, ideaId: req.body.ideaId, score:-1}];
+                    var newJudgments = [{ judgeName: user.name, judgeId: req.body.judgeId, judgeEmail: user.email,ideaId: req.body.ideaId, score:-1}];
                     (ideas[0].judgments).forEach((ret)=>{
                         if(ret.judgeId != req.body.judgeId) {
                             newJudgments.push(ret);
@@ -266,7 +268,8 @@ function assignIdeatoJudge(req, res) {
                         }else {
                             res.status(200).json({
                                 status: '200',
-                                statustext: 'Ok'
+                                statustext: 'Ok',
+                                judge: user
                             });
                         }
                     });

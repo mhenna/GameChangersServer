@@ -28,8 +28,8 @@ function registerUser(req, res) {
       })
     }
     else {
-        MailService.sendEmail(req.body.email, 'Account Creation for Game Changers',
-            'Your account for game changers has been created with the following credentials:\nemail: ' + req.body.email + '\npassword: '+ req.body.password + '\nYou can login at: http://ias00nan5eba.corp.emc.com/gamechanger/');
+        // MailService.sendEmail(req.body.email, 'Account Creation for Game Changers',
+        //     'Your account for game changers has been created with the following credentials:\nemail: ' + req.body.email + '\npassword: '+ req.body.password + '\nYou can login at: http://ias00nan5eba.corp.emc.com/gamechanger/');
         return res.status(200).json({
 
         status : '200',
@@ -204,7 +204,13 @@ function createJudge(req, res, next) {
     Utils.send400("Unauthorized", res);
     return;
   }
-  var user = new User(req.body);
+  let password = makePassword();
+  var user = new User();
+  user.email = req.body.email;
+  user.name = req.body.email;
+  user.location = "JUDGE";
+  user.region = "JUDGE";
+  user.password = password;
   user.isJudge = true;
   user.position = "Judge"
   user.previousParticipation = "no"
@@ -226,6 +232,9 @@ function createJudge(req, res, next) {
       })
     }
     else {
+  //  MailService.sendEmail(req.body.email, 'Account Creation for Game Changers',
+  //           'Your account for game changers has been created with the following credentials:\nemail: ' + user.email + '\npassword: '+ password + '\nYou can login at: http://ias00nan5eba.corp.emc.com/gamechanger/');
+       
       var judgment = new Judgment({judgeId: user._id, ideasID: []});
       judgment.save( (err, judgment) => {
         if(err) {
@@ -248,6 +257,16 @@ function createJudge(req, res, next) {
       });
     }
   });
+}
+
+function makePassword() {
+  var text = "";
+  var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+  for (var i = 0; i < 10; i++)
+    text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+  return text;
 }
 
 function getJudgeById(req, res) {
@@ -307,6 +326,95 @@ function getAllJudges(req, res) {
     })
   })
 }
+
+function isJudge(req,res){
+  if(req.user.email != config.admin) {
+    Utils.send400("Unauthorized", res);
+    return;
+}
+
+User.find({email: req.params.email}, (err, user) => {
+  if(err) {
+    console.log("err: ", err.message);
+    Utils.send400(err.message, res);
+    return
+  }
+  if(user.length == 0) {
+    return res.status(200).json({
+      status : '200',
+      message: 'Success',
+      state: false,
+      judgeId: "null"
+    })
+  }
+  return res.status(200).json({
+    status : '200',
+    message: 'Success',
+    state: true,
+    judgeId: user[0]._id,
+    isJudge: user[0].isJudge,
+    isUser: true
+  })
+})
+}
+
+function makeAuserAJudge(req, res){
+  console.log("Is admin?: ", req.user.email, req.user.email != config.admin)
+  if(req.user.email != config.admin) {
+      Utils.send400("Unauthorized", res);
+      return;
+  }
+
+  User.find({email: req.params.email}, (err, user) => {
+    if(err) {
+      console.log("err: ", err.message);
+      Utils.send400(err.message, res);
+      return
+    }
+    user[0].isJudge = true;
+    user[0].save((err, user) =>{
+      console.log(user);
+      if(err)
+      {
+        console.log(err)
+        return res.status(409).json({
+          status: '409',
+          message: 'Judge already exists'
+        })
+      }
+      if(!user) 
+      {
+        return res.status(500).json({
+          status: '500',
+          message: 'Internal server error'
+        })
+      }
+      else {
+        var judgment = new Judgment({judgeId: user._id, ideasID: []});
+        judgment.save( (err, judgment) => {
+          if(err) {
+            console.log(err);
+            Utils.send400("Internal Server Error " + err.message, res);
+            return;
+          }
+          if(!judgment) {
+            return res.status(500).json({
+              status: '500',
+              message: 'Internal server error'
+            })
+          }else {
+            return res.status(200).json({
+              status : '200',
+              message: 'Success',
+              body: user._id
+            })
+          }
+        });
+      }
+    });
+  })
+
+}
 module.exports = {
   registerUser,
   loginUser,
@@ -318,6 +426,8 @@ module.exports = {
   getAnotherUser,
   createJudge,
   getJudgeById,
-  getAllJudges
+  getAllJudges,
+  isJudge,
+  makeAuserAJudge
 };
 

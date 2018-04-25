@@ -42,6 +42,16 @@ router.route('/get-judge')
   .get(expressJwt({ secret: config.jwtSecret }), UserManager.getJudgeById); 
 router.route('/judges')
   .get(expressJwt({ secret: config.jwtSecret }), UserManager.getAllJudges); 
+
+router.route('/isJudge/:email')
+  .get(expressJwt({ secret: config.jwtSecret }), UserManager.isJudge)
+
+router.route('/makeJudge/:email')
+  .get(expressJwt({ secret: config.jwtSecret }),UserManager.makeAuserAJudge)  
+
+router.route('/createNewJudge/')
+  .post(expressJwt({ secret: config.jwtSecret }),UserManager.createJudge)    
+
 /** GET /users/protected-route - Example of how to protect an endpoint */
 router.route('/protected-route')
   .get(expressJwt({ secret: config.jwtSecret }), (req,res)=>{
