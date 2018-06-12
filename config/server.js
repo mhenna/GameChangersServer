@@ -15,6 +15,7 @@ import userRoutes from '../Business/Managers/User/user.routes';
 import teamRoutes from '../Business/Managers/Team/team.routes';
 import ideaRoutes from '../Business/Managers/Idea/idea.routes';
 import judgeRoutes from '../Business/Managers/Judge/judge.routes';
+import adminRoutes from '../Business/Managers/Admin/admin.routes';
 import expressJwt from 'express-jwt';
 
 
@@ -58,7 +59,7 @@ app.post('/register', (req, res) => { UserManager.registerUser(req); });
 app.use('/users', userRoutes);
 app.use('/ideas', expressJwt({secret: config.jwtSecret}), ideaRoutes);
 app.use('/judge', expressJwt({secret: config.jwtSecret}), judgeRoutes);
-
+app.use('/admin', adminRoutes);
 app.use('/teams', teamRoutes);
 
 // error handler
