@@ -12,4 +12,13 @@ router.get('/test', (req,res)=>{
 })
 router.route('/users')
   .get(adminManager.getAllUsers);
+
+router.route('/domains')
+  .get(adminManager.getAllDomains)
+  .post(adminManager.createDomain);
+
+  router.route('/domains/:name')
+  .delete(adminManager.removeDomain)
+  .put(adminManager.updateDomain); 
+
 module.exports = router;
