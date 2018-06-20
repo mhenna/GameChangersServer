@@ -12,7 +12,7 @@ module.exports = {
         name: Joi.string().required(),
         },
         params: {
-            name: Joi.string().required(), 
+            name: Joi.string().required(),
         }
     },
     removeDomain: {
