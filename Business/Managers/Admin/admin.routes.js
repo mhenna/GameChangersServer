@@ -9,8 +9,8 @@ import midddlewares from './Config/admin.midddlewares';
 
 const router = express.Router(); // eslint-disable-line new-cap
 
-router.get('/test',(req,res)=>{
-    res.json({message: "OK"})
+router.get('/test', (req, res) => {
+  res.json({ message: "OK" })
 })
 
 router.route('/users')
@@ -18,10 +18,17 @@ router.route('/users')
 
 router.route('/domains')
   .get(adminManager.getAllDomains)
-  .post(adminManager.createDomain);
+  .post(validate(adminValidation.createDomain), adminManager.createDomain);
 
-  router.route('/domains/:name')
-  .delete(adminManager.removeDomain)
-  .put(adminManager.updateDomain); 
+router.route('/domains/:name')
+  .delete(validate(adminValidation.removeDomain), adminManager.removeDomain)
+  .put(validate(adminValidation.updateDomain), adminManager.updateDomain);
 
+router.route('/categories')
+  .get(adminManager.getAllCategories)
+  .post(validate(adminValidation.createCategory), adminManager.createCategory);
+
+router.route('/categories/:name')
+  .delete(validate(adminValidation.removeCategory), adminManager.removeCategory)
+  .put(validate(adminValidation.updateCategory), adminManager.updateCategory);
 module.exports = router;

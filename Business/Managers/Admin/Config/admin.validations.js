@@ -16,9 +16,24 @@ module.exports = {
         }
     },
     removeDomain: {
+        params: {
+            name: Joi.string().required(), 
+        }
+    },
+    createCategory: {
+        body: {
+        name: Joi.string().required(),
+        }
+    },
+    updateCategory: {
         body: {
         name: Joi.string().required(),
         },
+        params: {
+            name: Joi.string().required(),
+        }
+    },
+    removeCategory: {
         params: {
             name: Joi.string().required(), 
         }
