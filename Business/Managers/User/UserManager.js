@@ -74,11 +74,15 @@ function loginUser(req, res, next) {
           //authenticate user, if it's his first login
                     // Create token if the password matched and no error was thrown
           const token = jwt.sign(user.toJSON(), config.jwtSecret);
+          let isAdmin = user.toJSON().isAdmin ? true: false;  
+          console.log("IS ADMIN ?? ", isAdmin);
+          
           res.status(200).json({
             success: true,
             message: 'Authentication successfull',
             token,
-            isJudge: user.toJSON().isJudge
+            isJudge: user.toJSON().isJudge,
+            isAdmin: isAdmin
           });
         } else {
           res.status(401).json({
