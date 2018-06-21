@@ -27,6 +27,9 @@ router.route('/upload')
   router.route('/admin-ideas')
   .get(IdeaManager.getAllIdeas); 
 
+  router.route('/challenges')
+  .get(IdeaManager.getAllChallenges); 
+
   
 
   module.exports = router;

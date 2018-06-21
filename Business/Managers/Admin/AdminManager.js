@@ -3,8 +3,8 @@ const Idea  = require('../Idea/Models/idea');
 const Utils = require('../utils')
 const Team  = require('../Team/Models/team');
 const User  = require('../User/Models/user');
-const Domain = require('./Models/domains.model');
-const Category = require('./Models/categories.model');
+const Domain = require('./Models/domain.model');
+const Challenge = require('./Models/challenge.model');
 function getAllUsers(req, res) {
     // console.log("Is admin?: ", req.user.email, req.user.email != config.admin)
     // if(req.user.email != config.admin) {
@@ -91,8 +91,8 @@ function removeDomain(req, res, next){
 function updateDomain(req, res, next){ 
     Domain.findOneAndUpdate({ name: req.params.name }, {name: req.body.name}, { new: true }, function (err, domain) {
         if (err) {
-            console.log('ERROR UPDATING DOMAIN')
             Utils.send400(err.message, res);
+            return;
         } else {
             if(domain) {
                 return res.status(200).json({
@@ -109,31 +109,14 @@ function updateDomain(req, res, next){
         }
     });
 }
-function getAllCategories(req, res) {
-    Category.find({}, (err, categories) => {
+function createChallenge(req, res, next) {
+    let challenge = new Challenge({ name: req.body.name});
+    challenge.save(function (err){
       if(err) {
-        console.log("err: ", err.message);
-        Utils.send400(err.message, res);
-        return
-      }
-        return res.status(200).json({
-            status : '200',
-            message: 'Success',
-            body: categories
-            })
-        })
-       
-}
-function createCategory(req, res, next) {
-    let category = new Category({ name: req.body.name});
-    category.save(function (err){
-      if(err) {
-        console.log("ERROR SAVING CATEGORY")
         const uniqueColumnKey = Object.keys(err.errors)[0];
         Utils.send400(err.errors[uniqueColumnKey].message, res);
         return;
       }else {
-        console.log("SAVING CATEGORY")
         res.status(200).json({
               status: '200',
               statustext: 'Ok'
@@ -141,13 +124,13 @@ function createCategory(req, res, next) {
       }
     });
   }
-function removeCategory(req, res, next){ 
-    Category.findOneAndRemove({ name: req.params.name }, function (err, category) {
+function removeChallenge(req, res, next){ 
+    Challenge.findOneAndRemove({ name: req.params.name }, function (err, challenge) {
         if (err) {
-            console.log('ERROR DELETING CATEGORY')
             Utils.send400(err.message, res);
+            return;
         } else {
-            if(category) {
+            if(challenge) {
                 return res.status(204).json({
                     status : '204',
                     message: 'Success'
@@ -161,17 +144,17 @@ function removeCategory(req, res, next){
         }
     });
 }
-function updateCategory(req, res, next){ 
-    Category.findOneAndUpdate({ name: req.params.name }, {name: req.body.name}, { new: true }, function (err, category) {
+function updateChallenge(req, res, next){ 
+    Challenge.findOneAndUpdate({ name: req.params.name }, {name: req.body.name}, { new: true }, function (err, challenge) {
         if (err) {
-            console.log('ERROR UPDATING CATEGORY')
             Utils.send400(err.message, res);
+            return;
         } else {
-            if(category) {
+            if(challenge) {
                 return res.status(200).json({
                     status : '200',
                     message: 'Success',
-                    result: category
+                    result: challenge
                 }); 
             } else {
                 return res.status(404).json({
@@ -188,8 +171,7 @@ module.exports = {
     createDomain,
     removeDomain,
     updateDomain,
-    getAllCategories,
-    createCategory,
-    removeCategory,
-    updateCategory,
+    createChallenge,
+    removeChallenge,
+    updateChallenge,
 }

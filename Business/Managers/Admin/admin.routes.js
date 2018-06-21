@@ -24,11 +24,11 @@ router.route('/domains/:name')
   .delete(validate(adminValidation.removeDomain), adminManager.removeDomain)
   .put(validate(adminValidation.updateDomain), adminManager.updateDomain);
 
-router.route('/categories')
-  .get(adminManager.getAllCategories)
-  .post(validate(adminValidation.createCategory), adminManager.createCategory);
+router.route('/challenges')
+  // .get(adminManager.getAllCategories)
+  .post(validate(adminValidation.createChallenge), adminManager.createChallenge);
 
-router.route('/categories/:name')
-  .delete(validate(adminValidation.removeCategory), adminManager.removeCategory)
-  .put(validate(adminValidation.updateCategory), adminManager.updateCategory);
+router.route('/challenges/:name')
+  .delete(validate(adminValidation.removeChallenge), adminManager.removeChallenge)
+  .put(validate(adminValidation.updateChallenge), adminManager.updateChallenge);
 module.exports = router;

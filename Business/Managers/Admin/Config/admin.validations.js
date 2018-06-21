@@ -20,12 +20,12 @@ module.exports = {
             name: Joi.string().required(), 
         }
     },
-    createCategory: {
+    createChallenge: {
         body: {
         name: Joi.string().required(),
         }
     },
-    updateCategory: {
+    updateChallenge: {
         body: {
         name: Joi.string().required(),
         },
@@ -33,7 +33,7 @@ module.exports = {
             name: Joi.string().required(),
         }
     },
-    removeCategory: {
+    removeChallenge: {
         params: {
             name: Joi.string().required(), 
         }
