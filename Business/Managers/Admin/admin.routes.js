@@ -9,14 +9,14 @@ import midddlewares from './Config/admin.midddlewares';
 
 const router = express.Router(); // eslint-disable-line new-cap
 
-router.get('/test', (req, res) => {
-  res.json({ message: "OK" })
+router.get('/test',(req,res)=>{
+    res.json({message: "OK"})
 })
 
 router.route('/users')
   .get(adminManager.getAllUsers);
 
-router.route('/domains')
+  router.route('/domains')
   .get(adminManager.getAllDomains)
   .post(validate(adminValidation.createDomain), adminManager.createDomain);
 
