@@ -20,5 +20,23 @@ module.exports = {
             name: Joi.string().required(), 
         }
     },
+    createChallenge: {
+        body: {
+        name: Joi.string().required(),
+        }
+    },
+    updateChallenge: {
+        body: {
+        name: Joi.string().required(),
+        },
+        params: {
+            name: Joi.string().required(),
+        }
+    },
+    removeChallenge: {
+        params: {
+            name: Joi.string().required(), 
+        }
+    },
 };
   

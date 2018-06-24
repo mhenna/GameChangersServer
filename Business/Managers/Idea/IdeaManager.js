@@ -6,6 +6,7 @@ const app = express();
 const Idea  = require('../Idea/Models/idea');
 const Team  = require('../Team/Models/team');
 const User  = require('../User/Models/user');
+const Challenge = require('../Admin/Models/challenge.model');
 
 const mime = require('mime-types')
 import config from '../../../config/config';
@@ -171,11 +172,26 @@ function getIdea(req, res) {
         });    
     })
 }
+function getAllChallenges(req, res) {
+    Challenge.find({}, (err, challenges) => {
+      if(err) {
+        console.log("err: ", err.message);
+        Utils.send400(err.message, res);
+        return
+      }
+        return res.status(200).json({
+            status : '200',
+            message: 'Success',
+            body: challenges
+            })
+        })     
+  }
 module.exports = {
 upload, 
 download, 
 createIdea, 
 getIdea,
 editIdea,
-getAllIdeas
+getAllIdeas,
+getAllChallenges
 }
