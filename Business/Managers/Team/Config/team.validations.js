@@ -1,31 +1,36 @@
-const Joi  = require('joi');
-const config = require('../../../../config/config')
+import Joi from 'joi';
 
-let user = Joi.object().keys({
-  email: Joi.string().regex(new RegExp(config.emailRegex)).required(),
+const user = Joi.object().keys({
+  email: Joi.string().required(),
   accepted: Joi.boolean().default(false)
 });
 
-module.exports = {
-  // POST /teams/new
-  new: {
-    body: {
-      teamName: Joi.string().required(),
-      members: Joi.array().items(user).required()
-    }
-  },
-
+  // POST /teams
+export const _createTeam = {
+  body: {
+    teamName: Joi.string().required(),
+    members: Joi.array().items(user).required(),
+  }
+};
   // POST /delete/member
-  delete: {
-    body: {
-      email: Joi.string().regex(new RegExp(config.emailRegex)).required()
-    }
+export const _deleteTeamMember = {
+  params: {
+    email: Joi.string().required()
+  }
+};
+
+  // POST /add/member
+export const _addTeamMember = {
+  body: {
+    email: Joi.string().required()
+  }
+};
+
+export const _respondToInvitation = {
+  body: {
+    accepted: Joi.boolean().required()
   },
-  
-    // POST /add/member
-    add: {
-      body: {
-        email: Joi.string().regex(new RegExp(config.emailRegex)).required()
-      }
-    }
+  params: {
+    teamName: Joi.string().required()
+  }
 };

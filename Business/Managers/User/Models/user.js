@@ -1,5 +1,6 @@
-const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
+import mongoose from 'mongoose';
+import bcrypt from 'bcrypt';
+import elasticsearch from '../../../../Services/elasticsearch';
 
 const userSchema = new mongoose.Schema({
   email: {
@@ -12,9 +13,9 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  region:{
+  region: {
     type: String,
-//    required: true
+    //    required: true
   },
   password: {
     type: String,
@@ -28,23 +29,24 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-    // this attributes shows if the user belongs to a team or not
+  // this attributes shows if the user belongs to a team or not
   teamMember: {
     type: String,
     default: '-1'
   },
-  //this attribute shows if the user is a creator of a team or not, if yes, the id of the team will be input
+  // this attribute shows if the user is a creator of a team or not,
+  // if yes, the id of the team will be input
   creatorOf: {
     type: String,
     default: '-1'
   },
   careerLevel: {
     type: String,
-//    required: true
+    //    required: true
   },
   isRemote: {
     type: Boolean,
-  //  required: true
+    //  required: true
   },
   isJudge: {
     type: Boolean,
@@ -63,7 +65,7 @@ const userSchema = new mongoose.Schema({
   },
   genNextMember: {
     type: Boolean,
-    //required: true
+    // required: true
   },
   previousParticipation: {
     type: Boolean,
@@ -72,10 +74,10 @@ const userSchema = new mongoose.Schema({
   ideasOrder: {
     // type: String,
     type: [],
-    //required: true
+    // required: true
   },
   isAuthenticated: {
-    type : Boolean,
+    type: Boolean,
     default: false
   },
   resetPasswordToken: {
@@ -87,35 +89,47 @@ const userSchema = new mongoose.Schema({
 });
 
 // Hash the user's password before inserting a new user
-userSchema.pre('save', function (next) {
+userSchema.pre('save', function encrypt(next) {
   const user = this;
-  if (this.isModified('password') || this.isNew) {
+  if (user.isModified('password') || user.isNew) {
     bcrypt.genSalt(10, (err, salt) => {
       if (err) {
         return next(err);
       }
-      bcrypt.hash(user.password, salt, (err, hash) => {
-        if (err) {
-          return next(err);
+      return bcrypt.hash(user.password, salt, (errBcrypt, hash) => {
+        if (errBcrypt) {
+          return next(errBcrypt);
         }
         user.password = hash;
-        next();
+        return next();
       });
     });
   } else {
-    return next();
+    next();
   }
 });
 
 // Compare password input to password saved in database
-userSchema.methods.comparePassword = function (pw, cb) {
-  bcrypt.compare(pw, this.password, (err, isMatch) => {
-    if (err) {
-      return cb(err);
-    }
-    cb(null, isMatch);
+userSchema.methods.comparePassword = function compare(pw) {
+  return new Promise((resolve, reject) => {
+    bcrypt.compare(pw, this.password, (err, isMatch) => {
+      if (err) {
+        reject(err);
+      }
+      resolve(isMatch);
+    });
   });
 };
 
-const User = mongoose.model('User', userSchema);
-module.exports = User;
+userSchema.post('save', function addToIndex() {
+  const user = this.toObject();
+  elasticsearch.addToIndex(elasticsearch.userType, user)
+    .then(() => {
+
+    })
+    .catch(() => {
+
+    });
+});
+
+export default mongoose.model('User', userSchema);

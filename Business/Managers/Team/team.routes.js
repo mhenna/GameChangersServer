@@ -1,27 +1,40 @@
-const express = require('express');
-const TeamManager = require('./TeamManager');
-const teamValidation = require('./Config/team.validations');
-const validate = require('express-validation');
 import expressJwt from 'express-jwt';
-import config from '../../../config/config'
-
-
+import express from 'express';
+import validate from 'express-validation';
+import config from '../../../config/config';
+import { isTeamDeadlineReached, validateMembersMailDomain, validateChallenge } from './Config/team.middlewares';
+import {
+  deleteTeamMember, createTeam, searchUsers, addTeamMember, teamCreated,
+  viewTeam, viewInvitations, respondToInvitation
+} from './TeamManager';
+import {
+  _deleteTeamMember, _addTeamMember, _createTeam, _respondToInvitation
+} from './Config/team.validations';
+import { validateMailDomain } from '../User/Config/user.middlewares';
 
 const router = express.Router(); // eslint-disable-line new-cap
 
-router.route('/new')
-  .post(validate(teamValidation.new),TeamManager.createTeam);
-
-router.route('/delete/member')
-  .post(validate(teamValidation.delete), TeamManager.deleteTeamMember);
-
-router.route('/add/member')
-  .post(validate(teamValidation.add), TeamManager.addTeamMember);
-
-router.route('/view/member')
-  .get(TeamManager.viewTeamMembers);
-
-router.route('/view/team')
-  .get(expressJwt({ secret: config.jwtSecret }), TeamManager.viewTeam);
-
-module.exports = router;
+router.route('/search/:email')
+  .get(searchUsers);
+router.route('')
+  .post(expressJwt({ secret: config.jwtSecret }),
+    validate(_createTeam), isTeamDeadlineReached,
+    validateMembersMailDomain, createTeam);
+router.route('/invitations')
+  .get(expressJwt({ secret: config.jwtSecret }), viewInvitations);
+router.route('/invitations/:teamName')
+  .put(expressJwt({ secret: config.jwtSecret }), validate(_respondToInvitation),
+    isTeamDeadlineReached, respondToInvitation);
+router.route('/self/members/:email')
+  .delete(expressJwt({ secret: config.jwtSecret }),
+    validate(_deleteTeamMember), isTeamDeadlineReached, validateMailDomain, deleteTeamMember);
+router.route('/self/members')
+  .post(expressJwt({ secret: config.jwtSecret }),
+    validate(_addTeamMember), isTeamDeadlineReached, validateMailDomain, addTeamMember);
+router.route('/self')
+  .get(expressJwt({ secret: config.jwtSecret }), teamCreated);
+router.route('/:teamName')
+  .get(expressJwt({ secret: config.jwtSecret }), viewTeam);
+router.route('/:teamName')
+  .get(expressJwt({ secret: config.jwtSecret }), viewTeam);
+export default router;

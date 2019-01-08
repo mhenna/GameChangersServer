@@ -1,5 +1,4 @@
 import mongoose from 'mongoose';
-import util from 'util';
 import logger from './config/winston';
 
 // config should be imported before importing any other file

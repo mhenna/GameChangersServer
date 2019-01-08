@@ -1,14 +1,13 @@
-const mongoose = require('mongoose');
-const beautifyUnique = require('mongoose-beautiful-unique-validation');
+import mongoose from 'mongoose';
+import beautifyUnique from 'mongoose-beautiful-unique-validation';
 
 const domainSchema = new mongoose.Schema({
-    name: {
-        type: String, 
-        required: true,
-        unique: true
-    }
+  name: {
+    type: String,
+    required: true,
+    unique: true
+  }
 });
 
 domainSchema.plugin(beautifyUnique);
-const Domain = mongoose.model('Domain', domainSchema);
-module.exports = Domain;
+export default mongoose.model('Domain', domainSchema);

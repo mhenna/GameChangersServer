@@ -1,0 +1,28 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose --file docker-compose.yml convert
+    kompose.version: 1.15.0 (e3cd4d4)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: elasticsearch
+  name: elasticsearch
+spec:
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.service: elasticsearch
+    spec:
+      containers:
+      - image: elasticsearch
+        name: elasticsearch
+        ports:
+        - containerPort: 9200
+        - containerPort: 9300
+        resources: {}
+      restartPolicy: Always
+status: {}

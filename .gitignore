@@ -52,3 +52,12 @@ node_modules
 
 # mail credentials
 Services/Credentials.env
+
+data/
+
+jest_0/*
+
+#apiDoc css and html
+APIs/Documentation/apidoc
+
+*.pdf

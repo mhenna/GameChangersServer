@@ -1,13 +1,12 @@
-const Joi  = require('joi');
-const config = require('../../../../config/config')
+const Joi = require('joi');
+const config = require('../../../../config/config');
 
 module.exports = {
 
-    download: {
-        body: {
-          file: Joi.string().required(),
-        }
-      }
-  
-  };
-  
+  download: {
+    body: {
+      file: Joi.string().required(),
+    }
+  }
+
+};

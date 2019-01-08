@@ -1,0 +1,9 @@
+{
+    "name": "GameChangers API documentation",
+    "version": "1.0.0",
+    "description": "GameChangers endpoints documentation",
+    "title": "GameChangers Documentation",
+    "template": {
+        "forceLanguage": "en"
+    }
+}

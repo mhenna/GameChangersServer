@@ -3,6 +3,7 @@ import gulpLoadPlugins from 'gulp-load-plugins';
 import path from 'path';
 import del from 'del';
 import runSequence from 'run-sequence';
+import { exec } from 'child_process';
 
 const plugins = gulpLoadPlugins();
 
@@ -23,6 +24,10 @@ gulp.task('copy', () =>
     .pipe(gulp.dest('dist'))
 );
 
+//generate api documentation
+gulp.task('documentation', () => 
+exec('apidoc -i ./APIs/Documentation/ -o ./APIs/Documentation/apidoc/'))
+
 // Compile ES6 to ES5 and copy to dist
 gulp.task('babel', () =>
   gulp.src([...paths.js, '!gulpfile.babel.js'], { base: '.' })
@@ -39,12 +44,12 @@ gulp.task('babel', () =>
 );
 
 // Start server with restart on file changes
-gulp.task('nodemon', ['copy', 'babel'], () =>
+gulp.task('nodemon', ['copy', 'documentation', 'babel'], () =>
   plugins.nodemon({
     script: path.join('dist', 'index.js'),
     ext: 'js',
     ignore: ['node_modules/**/*.js', 'dist/**/*.js'],
-    tasks: ['copy', 'babel']
+    tasks: ['copy', 'documentation', 'babel']
   })
 );
 

@@ -1,286 +1,184 @@
-const User = require('../User/Models/user');
-const Idea  = require('../Idea/Models/idea');
-const Utils = require('../utils');
-const Judgment = require('./Models/judgment');
+import HttpStatus from 'http-status-codes';
+import mongoose from 'mongoose';
 import config from '../../../config/config';
 
-function  getIdeas(req, res, next) {
-    var currJudgeId = req.user._id;
-    if(!req.user.isJudge) {
-        Utils.send400('Unauthorized', res);
-        return;
+const User = require('../User/Models/user');
+const Idea = require('../Idea/Models/idea');
+const Team = require('../Team/Models/team');
+const Utils = require('../utils');
+const Judgment = require('./Models/judgment');
+const IdeaJudgment = require('./Models/ideajudgments');
+const Question = require('../Admin/Models/judgment-questions.model');
+
+async function getIdeas(req, res) {
+  const body = [];
+  let index = 0;
+  try {
+    const ideas = await Idea.find({ judgments: { $elemMatch: { judgeId: req.user._id } } });
+
+
+    if (!ideas || ideas.length == 0) {
+      return Utils.sendResponse(res, HttpStatus.NOT_FOUND, HttpStatus.getStatusText(HttpStatus.NOT_FOUND), null, [{ message: 'You dont\'t have any ideas assigned.' }]);
     }
-    Judgment.find({judgeId: currJudgeId}, 'ideasId' ,function(err, ideas) {
-        if (err) {
-            Utils.send400(err, res);
-            return;
-        }
-        var final = []
-        var index = 0;
-        if(!ideas[0]) {
-            res.json({});
-            return;
-        }
-        (ideas[0].ideasId).forEach((idea)=>{
-            Idea.find({_id: idea}, 'teamName challenge title judgments', function(err, ret){
-                let currScore = -1;
-                let innovationComment =""
-                let problemSolvingComment = ""
-                let financialImpactComment = ""
-                let feasibilityComment = ""
-                let qualityComment = ""
-                let innovationScore =  -1 
-                let problemSolvingScore= -1
-                let financialImpactScore = -1
-                let feasibilityScore = -1
-                let qualityScore = -1
-                console.log("JUDGE",ret[0]);
-                if(!ret[0].judgments) {
-                    res.json({});
-                    return;
-                }
-                (ret[0].judgments).forEach((tempRet) =>{
-                    console.log(tempRet.judgeId, req.user._id)
-                    if(tempRet.judgeId == req.user._id) {
-                      currScore = tempRet.score;
-                      innovationComment = tempRet.innovationComment;
-                      problemSolvingComment = tempRet.problemSolvingComment;
-                      financialImpactComment = tempRet.financialImpactComment;
-                      feasibilityComment = tempRet.feasibilityComment;
-                      qualityComment = tempRet.qualityComment;
-                      innovationScore =  tempRet.innovationScore;
-                      problemSolvingScore= tempRet.problemSolvingScore;
-                      financialImpactScore = tempRet.financialImpactScore;
-                      feasibilityScore = tempRet.feasibilityScore;
-                      qualityScore = tempRet.qualityScore;
-                    }
-                });
-                if(!err)
-                {
-                    final.push({
-                        score: currScore,
-                        teamName: ret[0].teamName, 
-                        challenge: ret[0].challenge, 
-                        title: ret[0].title,
-                        innovationComment,
-                        problemSolvingComment,
-                        financialImpactComment,
-                        feasibilityComment,
-                        qualityComment,
-                        innovationScore,
-                        problemSolvingScore,
-                        financialImpactScore,
-                        feasibilityScore,
-                        qualityScore,
-                    });
-                 }
-                index++;
-                if(index == ideas[0].ideasId.length) {
-                    res.json(final);
-                    return;
-                }
-            });
-        });
+    ideas.forEach((idea) => {
+      const filtered = idea.judgments.filter(judgment => judgment.judgeId === req.user._id);
+      body.push({
+        title: idea.title,
+        teamName: idea.teamName,
+        score: filtered[0].score,
+        challenge: idea.category
+      });
+      index += 1;
+      if (index === ideas.length) {
+        return Utils.sendResponse(res, HttpStatus.OK,
+          HttpStatus.getStatusText(HttpStatus.OK), body);
+      }
     });
+    /* eslint-enable consistent-return */
+  } catch (err) {
+    return Utils.sendResponse(res, HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.getStatusText(HttpStatus.INTERNAL_SERVER_ERROR), null, [{ message: 'error retrieving ideas' }]);
+  }
 }
 
-function getIdea(req,res,next) {
-    var currJudgeId = req.user._id;
-    if(!req.user.isJudge) {
-        Utils.send400('Unauthorized', res);
-        return;
+
+async function getIdea(req, res) {
+  try {
+    const ideajudgment = await IdeaJudgment.findOne({
+      teamName: req.params.teamName,
+      judge: req.user._id
+    });
+    if (!ideajudgment) {
+      return Utils.sendResponse(res, HttpStatus.NOT_FOUND, HttpStatus.getStatusText(HttpStatus.NOT_FOUND), null, [{ message: 'IdeaJudgment not found.' }]);
     }
-    Judgment.find({judgeId: currJudgeId}, 'ideasId' ,function(err, ideas) {
-        if (err) {
-            Utils.send400(err, res);
-            return;
-        }
-        var final = []
-        var index = 0;
-        console.log(ideas);
-        console.log(req.params.teamName);
-            Idea.find({teamName: req.params.teamName}, '_id teamName challenge title judgments filename', function(err, ret){
-                let currScore = -1;
-                let innovationComment =""
-                let problemSolvingComment = ""
-                let financialImpactComment = ""
-                let feasibilityComment = ""
-                let qualityComment = ""
-                let innovationScore =  -1 
-                let problemSolvingScore= -1
-                let financialImpactScore = -1
-                let feasibilityScore = -1
-                let qualityScore = -1
-                let filename = "";
-                console.log("JUDGE",ret);
-            
-                (ret[0].judgments).forEach((tempRet) =>{
-                    console.log(tempRet.judgeId, req.user._id)
-                    if(tempRet.judgeId == req.user._id) {
-                      currScore = tempRet.score;
-                      innovationComment = tempRet.innovationComment;
-                      problemSolvingComment = tempRet.problemSolvingComment;
-                      financialImpactComment = tempRet.financialImpactComment;
-                      feasibilityComment = tempRet.feasibilityComment;
-                      qualityComment = tempRet.qualityComment;
-                      innovationScore =  tempRet.innovationScore;
-                      problemSolvingScore= tempRet.problemSolvingScore;
-                      financialImpactScore = tempRet.financialImpactScore;
-                      feasibilityScore = tempRet.feasibilityScore;
-                      qualityScore = tempRet.qualityScore;
-                    }
-                });
-                if(!err)
-                {
-                    final.push({
-                        score: currScore,
-                        teamName: ret[0].teamName, 
-                        challenge: ret[0].challenge, 
-                        title: ret[0].title,
-                        innovationComment,
-                        problemSolvingComment,
-                        financialImpactComment,
-                        feasibilityComment,
-                        qualityComment,
-                        innovationScore,
-                        problemSolvingScore,
-                        financialImpactScore,
-                        feasibilityScore,
-                        qualityScore,
-                        filename: ret[0].filename,
-                        ideaId: ret[0]._id
-                    });
-                 }
-            
-                
-                    res.json(final[0]);
-                    return;
-                
-            });
-        // res.json({});
-        // return;
+    const idea = await Idea.findOne({ teamName: req.params.teamName });
+    return res.status(200).json({
+      status: '200',
+      statustext: 'Ok',
+      body: ideajudgment,
+      idea
     });
+  } catch (error) {
+    return res.json({ state: 'error' });
+  }
 }
 
-function getJudgmentJson(req) {
-    
-    return { judgeName: req.user.name,judgeEmail: req.user.email, judgeId: req.user._id, ideaId: req.body.ideaId, score:req.body.score, innovationComment: req.body.innovationComment, problemSolvingComment: req.body.problemSolvingComment, financialImpactComment: req.body.financialImpactComment, feasibilityComment:req.body.feasibilityComment, qualityComment: req.body.qualityComment, innovationScore: req.body.innovationScore, problemSolvingScore: req.body.problemSolvingScore, feasibilityScore: req.body.feasibilityScore, qualityScore: req.body.qualityScore, financialImpactScore: req.body.financialImpactScore};
-}
 
-function submitJudgment(req, res, next) {
-    var currJudgeId = req.user._id;
-    if(!req.user.isJudge) {
-        Utils.send400('Unauthorized', res);
-        return;
+async function submitJudgment(req, res) {
+  const questions = req.body.questions;
+  let score = 0;
+  questions.forEach((question) => {
+    score += question.currentScore;
+  });
+  const currJudgeId = req.user._id;
+
+
+  const body = {
+    teamName: req.body.teamName,
+    idea: new mongoose.mongo.ObjectId(req.body.ideaId),
+    judge: new mongoose.mongo.ObjectId(req.user._id),
+    totalScore: score,
+    questions
+  };
+  try {
+    const idea = await Idea.findOne({
+      _id: req.body.ideaId,
+      judgments: { $elemMatch: { judgeId: req.user._id } }
+    });
+    try {
+      await IdeaJudgment.findOneAndUpdate({ judge: currJudgeId, idea: req.body.ideaId },
+        body, { upsert: true, new: true, setDefaultsOnInsert: true });
+      const judgments = idea.judgments.filter(judgment => judgment.judgeId !== req.user._id);
+      judgments.push({
+        judgeId: req.user._id,
+        judgeEmail: req.user.email,
+        judgeName: req.user.name,
+        score
+      });
+      let ideaScore = 0;
+      judgments.forEach((judgment) => {
+        ideaScore += judgment.score !== -1 ? judgment.score : 0;
+      });
+      idea.judgments = judgments;
+      idea.score = ideaScore / judgments.length;
+      try {
+        await idea.save();
+
+        return Utils.sendResponse(res, HttpStatus.OK, HttpStatus.getStatusText(HttpStatus.OK), { state: 'OK' });
+      } catch (err) {
+        return Utils.sendResponse(res, HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.getStatusText(HttpStatus.INTERNAL_SERVER_ERROR), null, [{ message: 'couldn\'t update idea.' }]);
+      }
+    } catch (err) {
+      return Utils.sendResponse(res, HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.getStatusText(HttpStatus.INTERNAL_SERVER_ERROR), null, [{ message: 'couldn\'t update/create IdeaJudgment.' }]);
     }
-
-    Judgment.find({judgeId: currJudgeId}, 'ideasId' ,function(err, ideasFirst) {
-        if(err) {
-            Utils.send400(err, res);
-            return;    
-        }
-        let judgment = getJudgmentJson(req);  
-        if(ideasFirst[0].ideasId.indexOf(judgment.ideaId) <= -1) {
-            Utils.send400('Unauthorized', res);
-            return;
-        } 
-        Idea.find({_id: judgment.ideaId} ,function(err, ideas) {
-            if(err) {
-                Utils.send400(err, res);
-                return;    
-            }
-            var newJudgments = [judgment];
-            (ideas[0].judgments).forEach((ret)=>{
-                if(ret.judgeId != judgment.judgeId) {
-                    newJudgments.push(ret);
-                }
-            });
-            ideas[0].judgments = newJudgments;
-            Idea.update({_id: judgment.ideaId}, ideas[0], function (err){
-                if(err) {
-                    Utils.send400(err, res);
-                    return;
-                }else {
-                    res.status(200).json({
-                        status: '200',
-                        statustext: 'Ok'
-                    });
-                }
-            });
-        });
-    });
+  } catch (err) {
+    return Utils.sendResponse(res, HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.getStatusText(HttpStatus.INTERNAL_SERVER_ERROR), null, [{ message: 'couldn\'t fetch idea.' }]);
+  }
 }
 
-function assignIdeatoJudge(req, res) {
-    
-    console.log("Is admin?: ", req.user.email, req.user.email != config.admin)
-    if(req.user.email != config.admin) {
-        Utils.send400("Unauthorized", res);
-        return;
+async function assignIdeatoJudge(req, res) {
+  try {
+    const idea = await Idea.findOne({ _id: req.body.ideaId });
+
+    if (!idea) {
+      Utils.sendResponse(res, HttpStatus.NOT_FOUND, HttpStatus.getStatusText(HttpStatus.NOT_FOUND), null, [{ message: 'Idea not found.' }]);
+      return;
     }
-    Judgment.find({judgeId: req.body.judgeId} ,function(err, judgment) {
-        if(err) {
-            console.log("ERR1: ", err)
-            Utils.send400(err, res);
-            return;    
-        }
+    try {
+      const judge = await User.findOne({ _id: req.body.judgeId });
+      if (!judge) {
+        Utils.sendResponse(res, HttpStatus.NOT_FOUND, HttpStatus.getStatusText(HttpStatus.NOT_FOUND), null, [{ message: 'Judge not found.' }]);
+        return;
+      }
+      const judgments = idea.judgments.filter(judgment => judgment.judgeId === req.body.judgeId);
+      if (judgments.length > 0) {
+        Utils.sendResponse(res, HttpStatus.BAD_REQUEST, HttpStatus.getStatusText(HttpStatus.BAD_REQUEST), null, [{ message: 'Judge has already been assigned to this idea.' }]);
+        return;
+      }
+      idea.judgments.push({
+        judgeId: req.body.judgeId,
+        judgeName: judge.name,
+        judgeEmail: judge.email,
+        score: -1
+      });
+      let ideaScore = 0;
 
-        if(!judgment) {
-            Utils.send400("Invalid Judge Id", res);
-            return;         
-        }
-        console.log(judgment)
-        var ideas = []
-        if(judgment[0] && judgment[0].ideasId.indexOf(req.body.ideaId) > -1) {
-            Utils.send400('Idea already assigned to this judge', res);
-            return;
-        } 
-        if(judgment[0])
-            ideas = judgment[0].ideasId.slice()
+      idea.judgments.forEach((judgment) => {
+        ideaScore += judgment.score !== -1 ? judgment.score : 0;
+      });
+      idea.score = ideaScore / idea.judgments.length;
+      try {
+        await idea.save();
 
-        ideas.push(req.body.ideaId);
-        Judgment.update({ judgeId: req.body.judgeId }, {ideasId: ideas}, { new: true, upsert: true}, function(err, doc){
-            if(err) {
-                console.log("err: ", err);
-                Utils.send400(err, res);
-                return;    
-            }
-            Idea.find({_id: req.body.ideaId} ,function(err, ideas) {
-                if(err) {
-                    Utils.send400(err, res);
-                    return;    
-                }
-                User.findOne({_id: req.body.judgeId}, (err, user) => {
-                    if(err) {
-                        Utils.send400(err.message, res); 
-                    }
-                    var newJudgments = [{ judgeName: user.name, judgeId: req.body.judgeId, judgeEmail: user.email,ideaId: req.body.ideaId, score:-1}];
-                    (ideas[0].judgments).forEach((ret)=>{
-                        if(ret.judgeId != req.body.judgeId) {
-                            newJudgments.push(ret);
-                        }
-                    });
-                    ideas[0].judgments = newJudgments;
-                    Idea.update({_id: req.body.ideaId}, ideas[0], function (err){
-                        if(err) {
-                            Utils.send400(err, res);
-                            return;
-                        }else {
-                            res.status(200).json({
-                                status: '200',
-                                statustext: 'Ok',
-                                judge: user
-                            });
-                        }
-                    });
-                });
-            });
-        });
-    });
+        Utils.sendResponse(res, HttpStatus.OK,
+          HttpStatus.getStatusText(HttpStatus.OK), { idea }, [{ message: 'judge added' }]);
+        return;
+      } catch (err) {
+        Utils.sendResponse(res, HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.getStatusText(HttpStatus.INTERNAL_SERVER_ERROR), null, [{ message: 'Error saving idea.' }]);
+        return;
+      }
+    } catch (err) {
+      Utils.sendResponse(res, HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.getStatusText(HttpStatus.INTERNAL_SERVER_ERROR), null, [{ message: 'Error fetching judge.' }]);
+      return;
+    }
+  } catch (err) {
+    Utils.sendResponse(res, HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.getStatusText(HttpStatus.INTERNAL_SERVER_ERROR), null, [{ message: 'Error fetching idea.' }]);
+  }
 }
+
+
+async function getQuestions(req, res) {
+  const judgmentQuestions = await Question.find({}, 'category question rate');
+  return res.status(200).json({
+    status: '200',
+    message: 'Success',
+    body: judgmentQuestions
+  });
+}
+
 module.exports = {
-    getIdeas,
-    submitJudgment,
-    getIdea,
-    assignIdeatoJudge
+  getIdeas,
+  submitJudgment,
+  getIdea,
+  assignIdeatoJudge,
+  getQuestions,
 };

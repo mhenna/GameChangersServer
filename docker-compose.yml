@@ -1,0 +1,50 @@
+version: "3" 
+
+services: 
+  
+  # backend service
+  game_changers_server: 
+    build: .
+    environment: 
+      - JWT_SECRET=yoursecret=D
+      - NODE_ENV=development
+      - PORT=4040
+      - FRONTEND_URL=http://localhost:4200
+      - DB_HOST=mongodb
+      - DB_NAME=gameChangersStaging
+      - REDISHOST=redis
+      - ELASTICSEARCH_HOST=elasticsearch:9200
+      - ELASTICSEARCH_INDEX=game_changers
+    ports: 
+      - '4040:4040'
+    volumes: 
+      - .:/usr/src/app  
+    depends_on:
+      - mongodb
+      - elasticsearch
+      - redis     
+   
+  # mongodb service     
+  mongodb:
+      image: mongo:latest
+      environment:
+        - MONGO_DATA_DIR=/data/db
+        - MONGO_LOG_DIR=/dev/null
+      volumes:
+        - ./data/db:/data/db
+      ports:
+          - 27017:27017
+      command: mongod --smallfiles --logpath=/dev/null # --quiet  
+  
+  # elasticsearch service
+  elasticsearch:
+    image: elasticsearch
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+
+  # redis service    
+  redis:
+    image: redis:latest
+    ports:
+      - '6379:6379'

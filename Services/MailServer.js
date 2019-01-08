@@ -1,20 +1,20 @@
 const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
-  host:"smtp.isus.emc.com",
+  host: 'smtp.isus.emc.com',
   port: 25,
   secureConnection: false, // TLS requires secureConnection to be false
-  secure:false,
+  secure: false,
   tls: {
-      ciphers:'SSLv3',
-      rejectUnauthorized:false
+    ciphers: 'SSLv3',
+    rejectUnauthorized: false
   }
 });
 
 function sendEmail(receiverEmail, Subject, Body) {
   return new Promise((resolve, reject) => {
     const mailOptions = {
-      from: "game-changers@dell.com",
+      from: 'game-changers@dell.com',
       to: receiverEmail,
       subject: Subject,
       text: Body
@@ -27,8 +27,7 @@ function sendEmail(receiverEmail, Subject, Body) {
     //     resolve(`Email sent: ${info.response}`);
     //   }
     // });
-  })
-  
+  });
 }
 
 module.exports = {

@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose --file docker-compose.yml convert
+    kompose.version: 1.15.0 (e3cd4d4)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: game-changers-server
+  name: game-changers-server
+spec:
+  ports:
+  - name: "4040"
+    port: 4040
+    targetPort: 4040
+  selector:
+    io.kompose.service: game-changers-server
+status:
+  loadBalancer: {}

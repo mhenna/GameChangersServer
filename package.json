@@ -5,16 +5,26 @@
   "main": "server.js",
   "scripts": {
     "start": "gulp serve",
-    "build": "gulp"
+    "build": "gulp",
+    "test:linux": "ENVIRONMENT=testing ELASTICSEARCH_INDEX=game_changers_test jest --forceExit",
+    "test:windows": "set ENVIRONMENT=testing&& set ELASTICSEARCH_INDEX=game_changers_test&& jest --forceExit",
+    "test": "ENVIRONMENT=testing ELASTICSEARCH_INDEX=game_changers_test jest --forceExit",
+    "test:coverage": "ENVIRONMENT=testing ELASTICSEARCH_INDEX=game_changers_test jest --collectCoverageFrom=Business/Managers/User/* --forceExit",
+    "lint": "esw Business/Managers/User --color"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@babel/register": "^7.0.0-beta.40",
     "async": "^2.6.0",
+    "babel-jest": "^23.4.0",
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "babel-polyfill": "^6.26.0",
+    "babel-runtime": "^6.26.0",
     "bcrypt": "^1.0.3",
     "bluebird": "3.4.6",
     "body-parser": "^1.18.2",
+    "boom": "^7.2.0",
     "busboy-body-parser": "^0.3.2",
     "compression": "1.6.2",
     "cookie-parser": "1.4.3",
@@ -22,6 +32,11 @@
     "crypto": "^1.0.1",
     "debug": "^2.4.5",
     "dotenv": "^4.0.0",
+    "elasticsearch": "^15.1.1",
+    "eslint": "^5.2.0",
+    "eslint-config-airbnb-base": "^13.0.0",
+    "eslint-plugin-import": "^2.13.0",
+    "eslint-watch": "^4.0.2",
     "express": "^4.16.2",
     "express-fileupload": "^0.4.0",
     "express-jwt": "5.1.0",
@@ -29,8 +44,11 @@
     "express-winston": "2.1.2",
     "faker": "^4.1.0",
     "gridfs-stream": "^1.1.1",
+    "gulp-nodemon": "^2.2.1",
     "helmet": "3.1.0",
     "http-status": "^0.2.0",
+    "http-status-codes": "^1.3.0",
+    "jest": "^23.4.1",
     "joi": "^13.1.2",
     "jsonwebtoken": "^8.1.1",
     "lodash": "^4.17.5",
@@ -42,12 +60,16 @@
     "morgan": "1.7.0",
     "node-env-file": "^0.1.8",
     "nodemailer": "^4.6.0",
+    "pdfkit": "^0.8.3",
+    "redis": "^2.8.0",
     "winston": "2.3.0"
   },
   "devDependencies": {
     "babel-cli": "6.18.0",
     "babel-core": "6.18.0",
     "babel-plugin-add-module-exports": "0.2.1",
+    "babel-plugin-transform-regenerator": "^6.26.0",
+    "babel-plugin-transform-runtime": "^6.23.0",
     "babel-preset-es2015": "6.16.0",
     "babel-preset-stage-2": "6.18.0",
     "chai": "^3.4.1",
@@ -60,24 +82,65 @@
     "gulp-babel": "6.1.2",
     "gulp-load-plugins": "^1.2.0",
     "gulp-newer": "^1.1.0",
-    "gulp-nodemon": "^2.0.6",
     "gulp-sourcemaps": "^1.6.0",
     "gulp-util": "^3.0.7",
     "husky": "^0.13.1",
-    "istanbul": "1.1.0-alpha.1",
     "mocha": "3.2.0",
     "run-sequence": "^1.1.5",
-    "supertest": "2.0.1",
+    "supertest": "^2.0.1",
     "supertest-as-promised": "4.0.2",
     "validate-commit-msg": "^2.6.1"
   },
   "babel": {
     "presets": [
       "es2015",
-      "stage-2"
+      "stage-2",
+      "babel-polyfill"
     ],
     "plugins": [
-      "add-module-exports"
+      "add-module-exports",
+      [
+        "transform-runtime",
+        {
+          "polyfill": false,
+          "regenerator": true
+        }
+      ],
+      [
+        "transform-regenerator",
+        {
+          "asyncGenerators": true,
+          "generators": true,
+          "async": true
+        }
+      ],
+      "babel-polyfill",
+      [
+        "transform-runtime",
+        {
+          "polyfill": false,
+          "regenerator": true
+        }
+      ]
+    ]
+  },
+  "jest": {
+    "collectCoverage": true,
+    "coverageReporters": [
+      "json",
+      "html"
+    ],
+    "transform": {
+      ".": "<rootDir>/node_modules/babel-jest"
+    },
+    "testRegex": "\\.test.js$",
+    "modulePathIgnorePatterns": [
+      "dist"
+    ],
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "node"
     ]
   }
 }

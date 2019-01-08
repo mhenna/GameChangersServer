@@ -1,0 +1,4 @@
+/dist
+/node_modules
+gulpfile.babel.js
+index.js
