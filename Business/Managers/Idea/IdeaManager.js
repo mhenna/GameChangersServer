@@ -68,7 +68,7 @@ function editIdea(req, res) {
   });
 }
 function getIdea(req, res) {
-  const teamName = req.params.teamName ? req.params.teamName : req.user.teamMember;
+  const teamName = req.params.TeamName ? req.params.teamName : req.user.teamMember;
   if (teamName == -1) {
     return Utils.sendResponse(res, httpStatus.BAD_REQUEST,
       httpStatus.getStatusText(httpStatus.BAD_REQUEST),
