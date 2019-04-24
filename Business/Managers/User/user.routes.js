@@ -17,7 +17,8 @@ import {
   getUser,
   authenticate,
   getAnotherUser,
-  getTeamStatus
+  getTeamStatus,
+  leaveTeam
 } from './UserManager';
 
 
@@ -66,4 +67,8 @@ router.route('/protected-route')
 
 router.route('/:id')
   .get(expressJwt({ secret: config.jwtSecret }), getAnotherUser);
+
+router.route('/leave-team')
+  .post(expressJwt({ secret: config.jwtSecret }), leaveTeam) 
+
 export default router;

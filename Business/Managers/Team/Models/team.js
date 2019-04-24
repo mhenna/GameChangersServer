@@ -5,14 +5,13 @@ const teamSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
-    unique: true
   },
   members: {
     type: [],
     required: true
   },
   creator: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: String,
     ref: 'User',
     required: true
   }

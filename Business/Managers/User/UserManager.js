@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import config from '../../../config/config';
 import User from './Models/user';
 import Utils from '../utils';
+import Team from '../Team/Models/team'
 
 export async function registerUser(req, res) {
   const user = new User(req.body);
@@ -49,7 +50,9 @@ export async function authenticate(req, res) {
 export async function loginUser(req, res) {
   try {
     const user = await User.findOne({ email: req.body.email });
+    // console.log("^#&*E@#^@(%#* " , user)
     if (!user) {
+      console.log("IFFFFFFFFFFFF")
       Utils.sendResponse(res, httpStatus.UNAUTHORIZED, httpStatus.getStatusText(
         httpStatus.UNAUTHORIZED
       ), null, [{ message: 'Wrong email or password' }]);
@@ -217,5 +220,65 @@ export async function getAnotherUser(req, res) {
     Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR, httpStatus.getStatusText(
       httpStatus.INTERNAL_SERVER_ERROR
     ), null, [{ message: 'couldn\'t connect to the database' }]);
+  }
+}
+
+export async function leaveTeam(req, res) {
+  try {
+    const user = await User.findOne({ email: req.user.email.toLowerCase() });
+    if (!user) {
+      return Utils.sendResponse(res, httpStatus.NOT_FOUND, httpStatus.getStatusText(
+        httpStatus.NOT_FOUND
+      ), null, [{ message: 'User not found.' }]);
+    }
+    try {
+      const team = await Team.findOne({name: req.user.teamMember})
+      if (!team) {
+        return Utils.sendResponse(res, httpStatus.NOT_FOUND, httpStatus.getStatusText(
+          httpStatus.NOT_FOUND
+        ), null, [{ message: 'Team not found.' }]);
+      }
+      if (req.user.email === team.creator) {
+        return Utils.sendResponse(res, httpStatus.BAD_REQUEST,
+          httpStatus.getStatusText(httpStatus.BAD_REQUEST), null, [{ message: 'The creator cannot leave the team.' }]);
+      }
+      const newMembers = [];
+      for (let i = 0; i < team.members.length; i += 1) {
+        if (team.members[i].email !== user.email) {
+          newMembers.push(team.members[i]);
+        }
+      }
+      if (team.members.length === newMembers.length) {
+        return Utils.sendResponse(res, httpStatus.NOT_FOUND,
+          httpStatus.getStatusText(httpStatus.NOT_FOUND), null, [{ message: 'You are currently not in a team.' }]);
+      }
+      if (newMembers.length < 2) {
+        return Utils.sendResponse(res, httpStatus.BAD_REQUEST,
+          httpStatus.getStatusText(httpStatus.BAD_REQUEST), null, [{ message: 'Team must at least have 2 members.' }]);
+      }
+      team.members = newMembers;
+      try {
+        await team.save();
+        user.teamMember = '-1';
+        try {
+          await user.save();
+          Utils.updateUserIndex(user);
+          return Utils.sendResponse(res, httpStatus.OK,
+            httpStatus.getStatusText(httpStatus.OK), { team });
+        } catch (err) {
+          return Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR,
+            httpStatus.getStatusText(httpStatus.INTERNAL_SERVER_ERROR), null, [{ message: 'couldn\'t update user please try again!' }]);
+        }
+      } catch (err) {
+        return Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR,
+          httpStatus.getStatusText(httpStatus.INTERNAL_SERVER_ERROR), null, [{ message: 'couldn\'t update team members please try again!' }]);
+      }
+    } catch (err) {
+      return Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR,
+        httpStatus.getStatusText(httpStatus.INTERNAL_SERVER_ERROR), null, [{ message: 'couldn\'t fetch team please try again!' }]);
+    }
+  } catch (err) {
+    return Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR,
+      httpStatus.getStatusText(httpStatus.INTERNAL_SERVER_ERROR), null, [{ message: 'couldn\'t fetch user please try again!' }]);
   }
 }
