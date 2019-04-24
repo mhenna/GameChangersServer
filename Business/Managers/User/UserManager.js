@@ -3,11 +3,15 @@ import jwt from 'jsonwebtoken';
 import config from '../../../config/config';
 import User from './Models/user';
 import Utils from '../utils';
+import logger from '../../../config/winston';
 
 export async function registerUser(req, res) {
+  console.log("REQ BODY"+req.body.toString())
   const user = new User(req.body);
+  //logger.error(req.body)
   if (req.body.password === req.body.passConf) {
     try {
+      console.log('YAAAY')
       const newUser = await user.save();
       if (!newUser) {
         Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR,
@@ -22,6 +26,7 @@ export async function registerUser(req, res) {
         httpStatus.getStatusText(httpStatus.OK),
         newUser._id);
     } catch (err) {
+      console.log(err)
       Utils.sendResponse(res, httpStatus.CONFLICT,
         httpStatus.getStatusText(httpStatus.CONFLICT), null,
         [{ message: 'User already exist' }]);

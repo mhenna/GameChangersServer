@@ -1,6 +1,8 @@
 import crypto from 'crypto';
 import elasticsearch from '../../Services/elasticsearch';
 import Domain from './Admin/Models/domain.model';
+import Region from './Admin/Models/region.model';
+import Chapter from './Admin/Models/chapter.model';
 
 function send400(message, res) {
   res.status(400).json({
@@ -72,10 +74,50 @@ function updateUserIndex(user) {
     })
     .catch();
 }
+
+async function checkRegion (inputRegion) {
+  try{
+    const region  = await Region.findOne({'name': inputRegion}).lean().exec()
+    if (region.name==inputRegion)
+      return true
+    else return false
+    } catch (err){
+      console.log(err)
+      return false
+    }
+}
+
+async function checkChapter (inputChapter) {
+  try{
+  const chapter  = await Chapter.findOne({'name': inputChapter}).lean().exec()
+  if (chapter.name==inputChapter)
+    return true
+  else return false
+  } catch (err){
+    console.log(err)
+    return false
+  }
+  // .exec((err,chapter) => {
+  //   console.log(inputChapter+"    result    "+chapter)
+  //   if (err) {
+  //     logger.error(err);
+  //     resolve(false)
+  //   } 
+  //   if (!chapter) {
+
+  //     resolve(false)
+  //   } 
+    
+  //   resolve()
+  // })
+}
+
 module.exports = {
   send400,
   sendResponse,
   getEmailDomainsAsRegex,
   getRandomToken,
-  updateUserIndex
+  updateUserIndex,
+  checkRegion,
+  checkChapter
 };

@@ -21,11 +21,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  brief: {
-    default: 'This user did not add any bio',
-    type: String
-  },
-  position: {
+  chapter: {
     type: String,
     required: true
   },
@@ -40,14 +36,6 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: '-1'
   },
-  careerLevel: {
-    type: String,
-    //    required: true
-  },
-  isRemote: {
-    type: Boolean,
-    //  required: true
-  },
   isJudge: {
     type: Boolean,
     default: false
@@ -56,20 +44,13 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
-  location: {
-    type: String,
-    required: true
-  },
-  otherLocation: {
-    type: String,
-  },
   genNextMember: {
     type: Boolean,
     // required: true
   },
   previousParticipation: {
     type: Boolean,
-    required: true
+    //required: true
   },
   ideasOrder: {
     // type: String,

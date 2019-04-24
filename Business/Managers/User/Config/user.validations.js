@@ -15,13 +15,13 @@ export const _register = {
     passConf: Joi.string().min(1).required(),
     // region: Joi.string().min(1).required(),
     // isRemote: Joi.boolean().required(),
-    location: Joi.string().min(1).required(),
+    // location: Joi.string().min(1).required(),
     // otherLocation: Joi.string().when('location', {is: 'Other', then: Joi.required(),
     // otherwise: Joi.string().optional()}),
     // careerLevel: Joi.string().min(1).required(),
     // isRemote: Joi.boolean().required(),
     // genNextMember: Joi.boolean().required(),
-    previousParticipation: Joi.boolean().required(),
+    // previousParticipation: Joi.boolean().required(),
   }
 };
 

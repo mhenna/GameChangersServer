@@ -2,7 +2,7 @@ import expressJwt from 'express-jwt';
 import express from 'express';
 import validate from 'express-validation';
 import config from '../../../config/config';
-import { isRegistrationDeadlineReached, validateMailDomain } from './Config/user.middlewares';
+import { isRegistrationDeadlineReached, validateMailDomain, validateLocation } from './Config/user.middlewares';
 import { getAllDeadlines } from '../Admin/AdminManager';
 import {
 
@@ -30,9 +30,9 @@ router.route('/login')
 /** POST /users/signup - Regiester new user */
 router.route('/signup')
   .post(validate(_register), isRegistrationDeadlineReached,
-    validateMailDomain, registerUser);
-
-
+    validateMailDomain, validateLocation, registerUser);
+router.route('/register')
+  .post(registerUser);
 router.route('/deadlines')
   .get(getAllDeadlines);
 /** GET /users/user - Get the current user object */
