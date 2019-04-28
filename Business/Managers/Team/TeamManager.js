@@ -407,3 +407,28 @@ try {
     return Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR, httpStatus.getStatusText(httpStatus.INTERNAL_SERVER_ERROR), null, [{ message: 'couldn\'t connect to the database' }]);
   }
 }
+
+export async function joinTeam(req, res){
+  try {
+    const team = await Team.findOneAndUpdate({ name: req.body.teamName },{ $addToSet: { members: { email: req.user.email } } });
+    if (!team) {
+      return Utils.sendResponse(res, httpStatus.NOT_FOUND, httpStatus.getStatusText(
+        httpStatus.NOT_FOUND
+      ), null, [{ message: 'Team not found.' }]);
+    }
+    
+    try {
+      const user = await User.findOneAndUpdate({ email: req.user.email },
+        { $set: { teamMember: req.body.teamName } }, { new: true });
+      Utils.updateUserIndex(user);
+      return Utils.sendResponse(res, httpStatus.OK,
+        httpStatus.getStatusText(httpStatus.OK), { message: `Invitation to ${req.body.teamName} has been accepted!` });
+    } catch (err) {
+      return Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR,
+        httpStatus.getStatusText(httpStatus.INTERNAL_SERVER_ERROR), null, [{ message: 'couldn\'t update user\'s team.' }]);
+    }
+  } catch (err) {
+    return Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR,
+      httpStatus.getStatusText(httpStatus.INTERNAL_SERVER_ERROR), null, [{ message: 'couldn\'t update team.' }]);
+  }
+}

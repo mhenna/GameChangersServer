@@ -34,3 +34,9 @@ export const _respondToInvitation = {
     teamName: Joi.string().required()
   }
 };
+
+export const _joinTeam = {
+  body:{
+    teamName: Joi.string().required()
+  }
+};
