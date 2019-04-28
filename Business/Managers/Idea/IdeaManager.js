@@ -53,7 +53,7 @@ function editIdea(req, res) {
     if (req.files) {
       gridfs.replace(req, res);
     } else {
-      Idea.update({ teamName: req.user.teamMember }, { title: req.body.title, teamName: req.user.teamMember }, { new: true, upsert: true }, (err, doc) => {
+      Idea.update({ teamName: req.user.teamMember }, { title: req.body.title, teamName: req.user.teamMember, description: req.body.description }, { new: true, upsert: true }, (err, doc) => {
         if (err) {
           Utils.send400('Cannot perform operation.', res);
           return;
