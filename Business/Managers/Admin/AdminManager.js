@@ -13,6 +13,8 @@ import Mail from './Models/mail.model';
 import redis from '../../../config/redis.config';
 import Question from './Models/judgment-questions.model';
 import elasticsearch from '../../../Services/elasticsearch';
+import Region from './Models/region.model';
+import Chapter from './Models/chapter.model';
 
 const esClient = elasticsearch.esClient;
 
@@ -718,6 +720,34 @@ export async function isJudge(req, res) {
   }
 }
 
+export async function addRegion(req, res){
+  const region = new Region ({
+    name: req.body.name
+  })
+  try{
+    await region.save()
+    Utils.sendResponse(res, httpStatus.OK, httpStatus.getStatusText(httpStatus.OK))
+  } catch (error){
+      const uniqueColumnKey = Object.keys(error.errors)[0];
+      Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(
+        httpStatus.BAD_REQUEST
+      ), null, [{ message: error.errors[uniqueColumnKey].message }]);
+  }
+}
+
+export async function addChapter(req, res){
+  const chapter = new Chapter ({
+    name: req.body.name
+  })
+  try{
+    await chapter.save()
+    Utils.sendResponse(res, httpStatus.OK, httpStatus.getStatusText(httpStatus.OK))
+  } catch (error){
+      Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(
+        httpStatus.BAD_REQUEST
+      ), null, [{ message: error}]);
+  }
+}
 // export async function makeAuserAJudge(req, res) {
 //   try {
 //     const user = await User.findOne({ email: req.params.email.toLowerCase() });

@@ -28,6 +28,7 @@ function write(req, res) {
       const idea = new Idea({ title: req.body.title, teamName: team });
       Idea.update({ teamName: team }, {
         filename: req.user.teamMember + req.body.extension,
+        description: req.body.description,
         oldFilename: req.body.oldFilename,
         title: req.body.title,
         category: req.body.challenge,

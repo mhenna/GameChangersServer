@@ -20,7 +20,7 @@ import adminRoutes from '../Business/Managers/Admin/admin.routes';
 import { isAdmin } from '../Business/Managers/Admin/Config/admin.midddlewares';
 import redis from './redis.config';
 import es from './elasticsearch.config';
-
+import registerUser from '../Business/Managers/User/UserManager';
 const app = express();
 
 app.use(express.static('APIs/Documentation'));
@@ -63,7 +63,9 @@ if (config.env === 'development') {
 
 es.intializeES();
 
-app.post('/register', (req, res) => { UserManager.registerUser(req); });
+app.post('/register', (req, res) => { 
+  console.log(req.body)
+  UserManager.registerUser(req,res) });
 // mount user routes at /users
 app.use('/users', userRoutes);
 app.use('/ideas', expressJwt({ secret: config.jwtSecret }), ideaRoutes);
