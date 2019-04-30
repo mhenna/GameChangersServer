@@ -7,6 +7,12 @@ import Deadline from '../Business/Managers/Admin/Models/deadline.model';
 const client = redis.createClient({
   host: config.redisHost,
 });
+client.on('connect', function() {
+  console.log('Redis client connected');
+});
+client.on('error', function (err) {
+  console.log('Something went wrong ' + err);
+});
 
 const getAsync = promisify(client.get).bind(client);
 
