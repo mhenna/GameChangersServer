@@ -256,10 +256,6 @@ export async function leaveTeam(req, res) {
         return Utils.sendResponse(res, httpStatus.NOT_FOUND,
           httpStatus.getStatusText(httpStatus.NOT_FOUND), null, [{ message: 'You are currently not in a team.' }]);
       }
-      if (newMembers.length < 2) {
-        return Utils.sendResponse(res, httpStatus.BAD_REQUEST,
-          httpStatus.getStatusText(httpStatus.BAD_REQUEST), null, [{ message: 'Team must at least have 2 members.' }]);
-      }
       team.members = newMembers;
       try {
         await team.save();
