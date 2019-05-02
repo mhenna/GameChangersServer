@@ -11,111 +11,109 @@ const esClient = elasticsearch.esClient;
 
 
 export async function createTeam(req, res) {
-  const teams = await Team.find({
-    name: req.body.teamName
-  });
-  if (teams.length > 0) {
-    return Utils.sendResponse(res, httpStatus.BAD_REQUEST,
-      httpStatus.getStatusText(httpStatus.BAD_REQUEST),
-      null, [{ message: 'Team name already exist' }]);
-  }
-  if (req.body.members.length > 5) {
-    return Utils.sendResponse(res, httpStatus.BAD_REQUEST,
-      httpStatus.getStatusText(httpStatus.BAD_REQUEST),
-      null, [{ message: 'Team cannot have more than 5 members!' }]);
-  }
-  const members = req.body.members;
-  const isAdmin = req.user.isAdmin;
-  const emails = [];
   const uniqueMembers = [];
-  if (!isAdmin) {
-    uniqueMembers.push({ email: req.user.email, accepted: true });
-  }
-  for (let i = 0; i < members.length; i += 1) {
-    const member = members[i];
-    try {
-      /* eslint-disable no-await-in-loop */
-      const tempMemeber = await User.findOne({ email: member.email.toLowerCase() });
-      /* eslint-enable no-await-in-loop */
-      if (!tempMemeber) {
-        return Utils.sendResponse(res, httpStatus.NOT_FOUND, httpStatus.getStatusText(
-          httpStatus.NOT_FOUND
-        ), null, [{ message: `${member.email} not found.` }]);
-      }
-      if (tempMemeber.isJudge || tempMemeber.isAdmin) {
-        return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(
-          httpStatus.BAD_REQUEST
-        ), null, [{ message: `${member.email} is a judge or an admin.` }]);
-      }
-      if (!emails.includes(member.email)) {
-        if (isAdmin) {
-          member.accepted = true;
-        }
-        uniqueMembers.push(member);
-        emails.push(member.email);
-      }
-      if (tempMemeber.teamMember !== '-1') {
-        return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(
-          httpStatus.BAD_REQUEST
-        ), null, [{ message: `${tempMemeber.email} already has a team.` }]);
-      }
-    } catch (err) {
-      return Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR, httpStatus.getStatusText(
-        httpStatus.INTERNAL_SERVER_ERROR
-      ), null, [{ message: 'couldn\'t fetch users from database.' }]);
-    }
-  }
-  const creatorId = new mongoose.mongo.ObjectId(req.user._id);
-  const team = new Team({
-    name: req.body.teamName,
-    members: uniqueMembers,
-    creator: creatorId
-  });
   try {
-    team.save();
-    try {
-      await User.findByIdAndUpdate({ _id: new mongoose.mongo.ObjectId(req.user._id) },
-        { teamMember: req.body.teamName });
-    } catch (err) {
-      return Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR, httpStatus.getStatusText(
-        httpStatus.INTERNAL_SERVER_ERROR
-      ), null, [{ message: 'couldn\'t update creator\'s teamMember field.' }]);
+    const user = await User.findOneAndUpdate({ email: req.user.email },
+      { teamMember: req.body.teamName, creatorOf: req.body.teamName }, { new: true });
+
+    const teams = await Team.find({
+      name: req.body.teamName
+    });
+    if (teams.length > 0) {
+      return Utils.sendResponse(res, httpStatus.BAD_REQUEST,
+        httpStatus.getStatusText(httpStatus.BAD_REQUEST),
+        null, [{ message: 'Team name already exist' }]);
     }
-    if (req.user.isAdmin) {
-      for (let i = 0; i < uniqueMembers.length; i += 1) {
-        const member = uniqueMembers[i];
-        try {
-          /* eslint-disable no-await-in-loop */
-          const user = await User.findOneAndUpdate({ email: member.email.toLowerCase() },
-            { $set: { teamMember: req.body.teamName } }, { new: true });
-          /* eslint-enable no-await-in-loop */
-          Utils.updateUserIndex(user);
-        } catch (err) {
-          return Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR, httpStatus.getStatusText(
-            httpStatus.INTERNAL_SERVER_ERROR
-          ), null, [{ message: 'couldn\'t update users teamMember field.' }]);
+    if (req.body.members.length > 5) {
+      return Utils.sendResponse(res, httpStatus.BAD_REQUEST,
+        httpStatus.getStatusText(httpStatus.BAD_REQUEST),
+        null, [{ message: 'Team cannot have more than 5 members!' }]);
+    }
+    const members = req.body.members;
+    for (let i = 0; i < members.length; i += 1) {
+      const member = members[i];
+      try {
+        /* eslint-disable no-await-in-loop */
+        const tempUser = await User.findOne({ email: member.email.toLowerCase() });
+        if (tempUser != null) {
+          try {
+            const userTemp = await User.findOneAndUpdate({ email: member.email.toLowerCase() },
+              { $set: { teamMember: req.body.teamName } }, { new: true });
+            /* eslint-enable no-await-in-loop */
+            Utils.updateUserIndex(userTemp);
+          } catch (err) {
+            return Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR,
+              httpStatus.getStatusText(httpStatus.INTERNAL_SERVER_ERROR), null, [{ message: 'couldn\'t update users team Name from database.' }]);
+          }
         }
+        if (tempUser == null) {
+          try {
+            const tempMember = new User({
+              email: member.email,
+              name: member.name,
+              password: 'password123',
+              passConf: 'password123',
+              location: user.location,
+              previousParticipation: 'no',
+              teamMember: req.body.teamName,
+              position: 'ww',
+              chapter: 'ay kalam'
+            });
+            const body = ' account has been created with your email and password is password123 please change it after the first time you log in';
+            Mail.sendEmail(member.email, 'account creation', body);
+            /* eslint-disable no-await-in-loop */
+            await tempMember.save();
+            /* eslint-enable no-await-in-loop */
+            uniqueMembers.push(member);
+
+            
+          } catch (err) {console.log(err,"ERROORRRRRRRRRRRRRRRRRRRRRRR")
+            return Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR,
+              httpStatus.getStatusText(httpStatus.INTERNAL_SERVER_ERROR), null, [{ message: 'couldn\'t create database.' }]);
+          }
+        }
+        
+        uniqueMembers.push(member)
+      } catch (err) {
+        return Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR, httpStatus.getStatusText(
+          httpStatus.INTERNAL_SERVER_ERROR
+        ), null, [{ message: 'couldn\'t fetch users from database.' }]);
       }
-    }
-    if (!isAdmin) {
-      const user = await User.findOneAndUpdate({ email: req.user.email },
-        { $set: { teamMember: req.body.teamName } }, { new: true });
-      /* eslint-enable no-await-in-loop */
-      Utils.updateUserIndex(user);
-    }
-  } catch (err) {
-    if (err.message === 'Validation failed') {
-      return Utils.sendResponse(res, httpStatus.CONFLICT, httpStatus.getStatusText(
-        httpStatus.CONFLICT
-      ), null, [{ message: 'Team name already exist' }]);
     }
 
+    console.log()
+            console.log()
+            console.log()
+            console.log()
+            console.log()
+            console.log(uniqueMembers)
+            console.log()
+            console.log()
+            console.log()
+            console.log()
+            console.log()
+    try {
+      const team = new Team({
+        name: req.body.teamName,
+        members: uniqueMembers,
+        creator: user._id,
+        allowOthers: req.body.allowOthers,
+	      lookingFor: req.body.lookingFor
+      });
+      await team.save();
+    } catch (err) {
+      return Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR, httpStatus.getStatusText(
+        httpStatus.INTERNAL_SERVER_ERROR
+      ), null, [{ message: 'couldn\'t save team .' }]);
+    }
+  } catch (err) {
     return Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR, httpStatus.getStatusText(
       httpStatus.INTERNAL_SERVER_ERROR
-    ), null, [{ message: 'couldn\'t create team.' }]);
+    ), null, [{ message: 'couldn\'t fetch users from database.' }]);
   }
   return Utils.sendResponse(res, httpStatus.OK, httpStatus.getStatusText(httpStatus.OK), { message: 'Team has been created.' });
 }
+
 
 export async function searchUsers(req, res) {
   const email = req.params.email.toLowerCase();
@@ -168,7 +166,7 @@ export async function respondToInvitation(req, res) {
 async function acceptInvitation(req, res) {
   try {
     const team = await Team.findOneAndUpdate({ name: req.params.teamName },
-      { $addToSet: { members: { accepted: true, email: req.user.email } } }, { new: true });
+      { $addToSet: { members: { email: req.user.email, name: req.user.name } } }, { new: true });
     if (!team) {
       return Utils.sendResponse(res, httpStatus.NOT_FOUND, httpStatus.getStatusText(
         httpStatus.NOT_FOUND
@@ -283,8 +281,21 @@ export async function deleteTeamMember(req, res) {
 }
 
 export async function addTeamMember(req, res) {
+  console.log("JKHEKKJHKJHEKKEJHFKJEFHKJHKJFHEKHEKFJKEFHKLFEHK")
+  console.log()
+  console.log()
+  console.log()
+  console.log()
+  console.log()
   try {
     const user = await User.findOne({ email: req.body.email.toLowerCase() });
+
+    console.log(user)
+    console.log()
+    console.log()
+    console.log()
+    console.log()
+    console.log()
     if (!user) {
       return Utils.sendResponse(res, httpStatus.NOT_FOUND, httpStatus.getStatusText(
         httpStatus.NOT_FOUND
@@ -301,8 +312,9 @@ export async function addTeamMember(req, res) {
       ), null, [{ message: `${user.email} is a judge or an admin.` }]);
     }
     try {
+      console.log("EMAILLLLLLLLLLLLLL", req.user.email)
       const team = req.user.isAdmin ? await Team.findOne({ teamName: req.params.teamName })
-        : await Team.findOne({ creator: req.user._id });
+        : await Team.findOne({ creator: req.user.email });
       if (!team) {
         return Utils.sendResponse(res, httpStatus.NOT_FOUND, httpStatus.getStatusText(
           httpStatus.NOT_FOUND

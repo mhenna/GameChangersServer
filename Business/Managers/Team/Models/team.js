@@ -5,16 +5,26 @@ const teamSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
+    unique: true
   },
   members: {
     type: [],
     required: true
   },
   creator: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
+  },
+  allowOthers: {
+    type: Boolean,
+    required: true
+  },
+  lookingFor: {
+    type: String,
+    required: true
   }
+
 });
 
 teamSchema.plugin(beautifyUnique);
