@@ -35,6 +35,11 @@ export const _respondToInvitation = {
   }
 };
 
+export const _deleteTeam = {
+  body: {
+    teamName: Joi.string().required(),
+  }
+};
 export const _joinTeam = {
   body:{
     teamName: Joi.string().required()

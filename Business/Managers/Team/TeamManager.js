@@ -410,7 +410,42 @@ export async function viewInvitations(req, res) {
   }
 }
 
-export async function joinTeam(req, res) {
+
+export async function deleteTeam(req, res){
+  try{
+    const team = await Team.findOne({ name: req.body.teamName, creator: req.user._id });
+    if (!team) {
+      console.log(req.user._id)
+      return Utils.sendResponse(res, httpStatus.NOT_FOUND,
+        httpStatus.getStatusText(httpStatus.NOT_FOUND), null, [{ message: 'Team not found or you have no authority to remove it!'}]);
+    }
+
+    try {
+      for(var i=0; i<team.members.length;i++){
+        /* eslint-disable no-await-in-loop */
+        const user = await User.findOneAndUpdate({ email: team.members[i].email.toLowerCase() },
+          { $set: { teamMember: '-1' } }, { new: true });
+        /* eslint-enable no-await-in-loop */
+        Utils.updateUserIndex(user);  
+      }
+
+    } catch (err) {
+      return Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR, httpStatus.getStatusText(
+        httpStatus.INTERNAL_SERVER_ERROR
+      ), null, [{ message: 'couldn\'t update users teamMember field.' }]);
+    }
+
+    await team.remove();
+    return Utils.sendResponse(res, httpStatus.OK,
+      httpStatus.getStatusText(httpStatus.OK), { message: `Team ${req.body.teamName} has been deleted!` });
+
+  }catch(err){
+    return Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR, httpStatus.getStatusText(httpStatus.INTERNAL_SERVER_ERROR), null, [{ message: 'couldn\'t connect to the database' }]);
+  }
+}
+
+export async function joinTeam(req, res){
+
   try {
     const team = await Team.findOneAndUpdate({ name: req.body.teamName }, { $addToSet: { members: { email: req.user.email } } });
     if (!team) {

@@ -8,7 +8,7 @@ import {
   viewTeam, viewInvitations, respondToInvitation, joinTeam, getAllTeams
 } from './TeamManager';
 import {
-  _deleteTeamMember, _addTeamMember, _createTeam, _respondToInvitation, _joinTeam
+  _deleteTeamMember, _addTeamMember, _createTeam, _respondToInvitation, _joinTeam, _deleteTeam
 } from './Config/team.validations';
 import { validateMailDomain } from '../User/Config/user.middlewares';
 
@@ -40,4 +40,7 @@ router.route('/self')
   .get(expressJwt({ secret: config.jwtSecret }), teamCreated);
 router.route('/:teamName')
   .get(expressJwt({ secret: config.jwtSecret }), viewTeam);
+router.route('/remove')
+  .delete(expressJwt({ secret: config.jwtSecret }), validate(_deleteTeam), deleteTeam);
+
 export default router;
