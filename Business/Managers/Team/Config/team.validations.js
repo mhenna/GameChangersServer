@@ -2,7 +2,7 @@ import Joi from 'joi';
 
 const user = Joi.object().keys({
   email: Joi.string().required(),
-  accepted: Joi.boolean().default(false)
+  name: Joi.string().required()
 });
 
   // POST /teams

@@ -15,7 +15,16 @@ const teamSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
+  },
+  allowOthers: {
+    type: Boolean,
+    required: true
+  },
+  lookingFor: {
+    type: String,
+    required: true
   }
+
 });
 
 teamSchema.plugin(beautifyUnique);

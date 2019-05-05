@@ -10,7 +10,7 @@ export const _login = {
 export const _register = {
   body: {
     name: Joi.string().min(1).required(),
-    email: [Joi.string().required()],
+    email: Joi.string().required(),
     password: Joi.string().min(1).required(),
     passConf: Joi.string().min(1).required(),
     // region: Joi.string().min(1).required(),
