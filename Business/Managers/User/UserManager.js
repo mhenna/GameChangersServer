@@ -9,7 +9,7 @@ import Team from '../Team/Models/team'
 export async function registerUser(req, res) {
   console.log("REQ BODY"+req.body.toString())
   const user = new User(req.body);
-  //logger.error(req.body)
+  console.log(user,"KKKKKKKK")
   if (req.body.password === req.body.passConf) {
     try {
       console.log('YAAAY')
@@ -27,7 +27,7 @@ export async function registerUser(req, res) {
         httpStatus.getStatusText(httpStatus.OK),
         newUser._id);
     } catch (err) {
-      console.log(err)
+      console.log(err,"ERROORRR")
       Utils.sendResponse(res, httpStatus.CONFLICT,
         httpStatus.getStatusText(httpStatus.CONFLICT), null,
         [{ message: 'User already exist' }]);

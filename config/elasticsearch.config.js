@@ -1,5 +1,6 @@
 import config from './config';
 import logger from './winston';
+
 const elasticsearch = require('elasticsearch');
 const User = require('../Business/Managers/User/Models/user');
 
@@ -107,13 +108,17 @@ async function addUserMapping() {
 async function addUsers() {
   return new Promise((resolve, reject) => {
     User.find({}, { __v: false }).lean().exec((err, users) => {
+      logger.info(`${users}UUUUUUUUUUUU`);
       if (err) {
+        console.log(err, 'ESESESES');
         logger.error(err);
         reject();
       }
-      if (!users) {
+      if (users.length==0) {
+        console.log(users, 'ESUSERS');
         logger.error('No users found');
       } else {
+        console.log(users, 'USEEERRRSSSSS');
         bulkIndex(userType, users);
       }
       resolve();

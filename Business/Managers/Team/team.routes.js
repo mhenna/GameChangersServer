@@ -38,7 +38,5 @@ router.route('/self')
   .get(expressJwt({ secret: config.jwtSecret }), teamCreated);
 router.route('/:teamName')
   .get(expressJwt({ secret: config.jwtSecret }), viewTeam);
-router.route('/:teamName')
-  .get(expressJwt({ secret: config.jwtSecret }), viewTeam);
 
 export default router;

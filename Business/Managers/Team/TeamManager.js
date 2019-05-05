@@ -6,9 +6,9 @@ import User from '../User/Models/user';
 // import MailService from '../../../Services/MailServer';
 import Utils from '../utils';
 import elasticsearch from '../../../Services/elasticsearch';
+import Mail from '../../../Services/MailServer';
 
 const esClient = elasticsearch.esClient;
-
 
 export async function createTeam(req, res) {
   const uniqueMembers = [];
@@ -39,6 +39,7 @@ export async function createTeam(req, res) {
           try {
             const userTemp = await User.findOneAndUpdate({ email: member.email.toLowerCase() },
               { $set: { teamMember: req.body.teamName } }, { new: true });
+              uniqueMembers.push(member);
             /* eslint-enable no-await-in-loop */
             Utils.updateUserIndex(userTemp);
           } catch (err) {
@@ -65,33 +66,17 @@ export async function createTeam(req, res) {
             await tempMember.save();
             /* eslint-enable no-await-in-loop */
             uniqueMembers.push(member);
-
-            
           } catch (err) {console.log(err,"ERROORRRRRRRRRRRRRRRRRRRRRRR")
             return Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR,
               httpStatus.getStatusText(httpStatus.INTERNAL_SERVER_ERROR), null, [{ message: 'couldn\'t create database.' }]);
           }
         }
-        
-        uniqueMembers.push(member)
       } catch (err) {
         return Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR, httpStatus.getStatusText(
           httpStatus.INTERNAL_SERVER_ERROR
         ), null, [{ message: 'couldn\'t fetch users from database.' }]);
       }
     }
-
-    console.log()
-            console.log()
-            console.log()
-            console.log()
-            console.log()
-            console.log(uniqueMembers)
-            console.log()
-            console.log()
-            console.log()
-            console.log()
-            console.log()
     try {
       const team = new Team({
         name: req.body.teamName,
@@ -396,25 +381,24 @@ export async function viewTeam(req, res) {
 }
 
 export async function viewInvitations(req, res) {
-  
-try {
-    let teams = await Team.find({
+  try {
+    const teams = await Team.find({
       members: {
         $elemMatch: {
           email: req.user.email, accepted: false
         }
       }
     });
-    let respTeams = []
- for(var i = 0 ;i<teams.length;i++){
-   let team =teams[i];
-    const creator = await User.find({_id:team.creator});
-      let respTeam = {"creatorName":creator[0].email , ...team._doc}
-      respTeams.push(respTeam)
+    const respTeams = [];
+    for (let i = 0; i < teams.length; i++) {
+      const team = teams[i];
+      const creator = await User.find({ _id: team.creator });
+      const respTeam = { creatorName: creator[0].email, ...team._doc };
+      respTeams.push(respTeam);
     }
-   
+
     return Utils.sendResponse(res, httpStatus.OK,
-      httpStatus.getStatusText(httpStatus.OK),  respTeams );
+      httpStatus.getStatusText(httpStatus.OK), respTeams);
   } catch (err) {
     return Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR, httpStatus.getStatusText(httpStatus.INTERNAL_SERVER_ERROR), null, [{ message: 'couldn\'t connect to the database' }]);
   }
