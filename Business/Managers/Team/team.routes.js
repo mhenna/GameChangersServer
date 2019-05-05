@@ -5,7 +5,7 @@ import config from '../../../config/config';
 import { isTeamDeadlineReached, validateMembersMailDomain, validateChallenge } from './Config/team.middlewares';
 import {
   deleteTeamMember, createTeam, searchUsers, addTeamMember, teamCreated,
-  viewTeam, viewInvitations, respondToInvitation, joinTeam
+  viewTeam, viewInvitations, respondToInvitation, joinTeam, getAllTeams
 } from './TeamManager';
 import {
   _deleteTeamMember, _addTeamMember, _createTeam, _respondToInvitation, _joinTeam
@@ -17,6 +17,8 @@ const router = express.Router(); // eslint-disable-line new-cap
 router.route('/join')
   .post(expressJwt({ secret: config.jwtSecret }), validate(_joinTeam), joinTeam)
 
+router.route('/allTeams')
+    .get(getAllTeams);
 router.route('/search/:email')
   .get(searchUsers);
 router.route('')
@@ -38,5 +40,4 @@ router.route('/self')
   .get(expressJwt({ secret: config.jwtSecret }), teamCreated);
 router.route('/:teamName')
   .get(expressJwt({ secret: config.jwtSecret }), viewTeam);
-
 export default router;

@@ -434,3 +434,15 @@ export async function joinTeam(req, res) {
       httpStatus.getStatusText(httpStatus.INTERNAL_SERVER_ERROR), null, [{ message: 'couldn\'t update team.' }]);
   }
 }
+
+export async function getAllTeams(_, res) {
+  try {
+    const teams = await Team.find().populate('creator', 'email name');
+    Utils.sendResponse(res, httpStatus.OK, httpStatus.getStatusText(httpStatus.OK),
+      teams);
+  } catch (error) {
+    Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR, httpStatus.getStatusText(
+      httpStatus.INTERNAL_SERVER_ERROR
+    ), null, [{ message: 'couldn\'t connect to the database' }]);
+  }
+}
