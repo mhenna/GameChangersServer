@@ -22,7 +22,7 @@ export async function registerUser(req, res) {
       }
       // MailService.sendEmail(req.body.email, 'Account Creation for Game Changers',
       //     'Your account for game changers has been created with the following credentials:\nemail: ' + req.body.email + '\npassword: '+ req.body.password + '\nYou can login at: http://ias00nan5eba.corp.emc.com/gamechanger/');
-
+      const token = jwt.sign(user.toJSON(), config.jwtSecret);
       Utils.sendResponse(res, httpStatus.OK,
         httpStatus.getStatusText(httpStatus.OK),
         newUser._id);

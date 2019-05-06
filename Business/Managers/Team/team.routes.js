@@ -5,7 +5,7 @@ import config from '../../../config/config';
 import { isTeamDeadlineReached, validateMembersMailDomain, validateChallenge } from './Config/team.middlewares';
 import {
   deleteTeamMember, createTeam, searchUsers, addTeamMember, teamCreated,
-  viewTeam, viewInvitations, respondToInvitation, joinTeam, getAllTeams
+  viewTeam, viewInvitations, respondToInvitation, joinTeam, getAllTeams, deleteTeam
 } from './TeamManager';
 import {
   _deleteTeamMember, _addTeamMember, _createTeam, _respondToInvitation, _joinTeam, _deleteTeam

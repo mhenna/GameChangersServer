@@ -22,7 +22,7 @@ const teamSchema = new mongoose.Schema({
   },
   lookingFor: {
     type: String,
-    required: true
+    //required: true
   }
 
 });

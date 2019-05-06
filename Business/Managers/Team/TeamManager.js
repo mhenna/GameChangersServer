@@ -7,14 +7,16 @@ import User from '../User/Models/user';
 import Utils from '../utils';
 import elasticsearch from '../../../Services/elasticsearch';
 import Mail from '../../../Services/MailServer';
+import jwt from 'jsonwebtoken';
 
 const esClient = elasticsearch.esClient;
 
 export async function createTeam(req, res) {
   const uniqueMembers = [];
+  var user
   if (req.user.teamMember == -1) {
     try {
-      const user = await User.findOneAndUpdate({ email: req.user.email },
+      user = await User.findOneAndUpdate({ email: req.user.email },
         { teamMember: req.body.teamName, creatorOf: req.body.teamName }, { new: true });
 
       const teams = await Team.find({
@@ -89,6 +91,7 @@ export async function createTeam(req, res) {
         });
         await team.save();
       } catch (err) {
+        console.log(err)
         return Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR, httpStatus.getStatusText(
           httpStatus.INTERNAL_SERVER_ERROR
         ), null, [{ message: 'couldn\'t save team .' }]);
@@ -98,7 +101,8 @@ export async function createTeam(req, res) {
         httpStatus.INTERNAL_SERVER_ERROR
       ), null, [{ message: 'couldn\'t fetch users from database.' }]);
     }
-    return Utils.sendResponse(res, httpStatus.OK, httpStatus.getStatusText(httpStatus.OK), { message: 'Team has been created.' });
+    const token = jwt.sign(user.toJSON(), config.jwtSecret);
+    return Utils.sendResponse(res, httpStatus.OK, httpStatus.getStatusText(httpStatus.OK), { message: 'Team has been created.', token });
   }
   return Utils.sendResponse(res, httpStatus.BAD_REQUEST,
     httpStatus.getStatusText(httpStatus.BAD_REQUEST),
