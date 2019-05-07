@@ -87,7 +87,9 @@ export async function createTeam(req, res) {
           members: uniqueMembers,
           creator: user._id,
           allowOthers: req.body.allowOthers,
-          lookingFor: req.body.lookingFor
+          lookingFor: req.body.lookingFor,
+          region: user.region,
+          chapter: user.chapter
         });
         await team.save();
       } catch (err) {
