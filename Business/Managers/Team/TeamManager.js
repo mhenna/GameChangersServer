@@ -486,3 +486,22 @@ export async function getAllTeams(_, res) {
     ), null, [{ message: 'couldn\'t connect to the database' }]);
   }
 }
+
+export async function editTeam(req, res) {
+  console.log(req.user.email)
+  try {
+    var team = await Team.findOne(
+      { name: req.body.teamName,
+        //creator: req.user.email 
+      })
+    team.allowOthers = req.body.allowOthers;
+    team.lookingFor = req.body.lookingFor;
+    await team.save();
+    return Utils.sendResponse(res, httpStatus.OK,
+      httpStatus.getStatusText(httpStatus.OK), { message: 'Team updated', team });
+  } catch (err) {
+    console.log(err)
+    return Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR,
+      httpStatus.getStatusText(httpStatus.INTERNAL_SERVER_ERROR), null, [{ message: 'couldn\'t fetch team please try again!' }]);
+  }
+}

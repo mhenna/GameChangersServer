@@ -45,3 +45,9 @@ export const _joinTeam = {
     teamName: Joi.string().required()
   }
 };
+
+export const _editTeam = {
+  body:{
+    teamName: Joi.string().required() 
+  }
+};
