@@ -57,11 +57,10 @@ export async function createTeam(req, res) {
                 name: member.name,
                 password: 'password123',
                 passConf: 'password123',
-                location: user.location,
+                region: user.region,
+                chapter: user.chapter,
                 previousParticipation: 'no',
-                teamMember: req.body.teamName,
-                position: 'ww',
-                chapter: 'ay kalam'
+                teamMember: req.body.teamName
               });
               const body = ' account has been created with your email and password is password123 please change it after the first time you log in';
               Mail.sendEmail(member.email, 'account creation', body);

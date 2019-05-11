@@ -22,7 +22,6 @@ const teamSchema = new mongoose.Schema({
   },
   lookingFor: {
     type: String,
-
     // required: true
   },
   region: {
@@ -32,7 +31,6 @@ const teamSchema = new mongoose.Schema({
   chapter: {
     type: String,
     required: true
-
   }
 
 });
