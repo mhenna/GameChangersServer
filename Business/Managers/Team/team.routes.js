@@ -43,6 +43,7 @@ router.route('/:teamName')
 router.route('/remove')
   .delete(expressJwt({ secret: config.jwtSecret }), validate(_deleteTeam), deleteTeam);
 router.route('/self/edit')
-  .post(expressJwt({ secret: config.jwtSecret }), validate(_editTeam), editTeam);
+  .post(expressJwt({ secret: config.jwtSecret }), validate(_editTeam),
+   isTeamDeadlineReached, editTeam);
 
 export default router;

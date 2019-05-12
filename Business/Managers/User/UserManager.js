@@ -269,16 +269,17 @@ export async function leaveTeam(req, res) {
       try {
         await team.save();
         user.teamMember = '-1';
-        const creator = User.findById(team.creator)
-        const body = ' some one left your team ';
-        await Mail.sendEmail(creator.email, 'Some one left your team', body);
-
         try {
           await user.save();
           console.log("AFTER SACE")
           Utils.updateUserIndex(user);
+          const creator = await User.findById(team.creator);
+          const body = ' some one left your team ';
+          console.log(team.creator, '*****************',creator)
+          await Mail.sendEmail(creator.email, 'Some one left your team', body);
+          const token = jwt.sign(user.toJSON(), config.jwtSecret);
           return Utils.sendResponse(res, httpStatus.OK,
-            httpStatus.getStatusText(httpStatus.OK), { team });
+            httpStatus.getStatusText(httpStatus.OK), { team, token});
         } catch (err) {
           console.log(err)
           return Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR,

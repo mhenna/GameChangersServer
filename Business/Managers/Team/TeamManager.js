@@ -471,18 +471,19 @@ export async function joinTeam(req, res) {
       const user = await User.findOneAndUpdate({ email: req.user.email },
         { $set: { teamMember: req.body.teamName } }, { new: true });
       Utils.updateUserIndex(user);
+      const token = jwt.sign(user.toJSON(), config.jwtSecret);
       try {
         const creator = await User.findById(team.creator);
         const body = ' a new member has joined your team ';
         await Mail.sendEmail(creator.email, 'Some one joined your team', body);
       } catch (err) {
+        console.log(err)
         return Utils.sendResponse(res, httpStatus.NOT_FOUND, httpStatus.getStatusText(
           httpStatus.NOT_FOUND
         ), null, [{ message: 'can\'t email team creator' }]);
       }
-
       return Utils.sendResponse(res, httpStatus.OK,
-        httpStatus.getStatusText(httpStatus.OK), { message: `Invitation to ${req.body.teamName} has been accepted!` });
+        httpStatus.getStatusText(httpStatus.OK), { message: `Invitation to ${req.body.teamName} has been accepted!` , token});
     } catch (err) {
       return Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR,
         httpStatus.getStatusText(httpStatus.INTERNAL_SERVER_ERROR), null, [{ message: 'couldn\'t update user\'s team.' }]);
