@@ -5,6 +5,7 @@ import User from './Models/user';
 import Utils from '../utils';
 import logger from '../../../config/winston';
 import Team from '../Team/Models/team'
+import Mail from '../../../Services/MailServer';
 
 export async function registerUser(req, res) {
   console.log("REQ BODY"+req.body.toString())
@@ -20,8 +21,8 @@ export async function registerUser(req, res) {
           [{ message: 'Cannot register at this time, please try again later.' }]);
         return;
       }
-      // MailService.sendEmail(req.body.email, 'Account Creation for Game Changers',
-      //     'Your account for game changers has been created with the following credentials:\nemail: ' + req.body.email + '\npassword: '+ req.body.password + '\nYou can login at: http://ias00nan5eba.corp.emc.com/gamechanger/');
+      Mail.sendEmail(req.body.email, 'Account Creation for Game Changers',
+          'Your account for game changers has been created with the following credentials:\nemail: ' + req.body.email + '\npassword: '+ req.body.password + '\nYou can login at: http://ias00nan5eba.corp.emc.com/gamechanger/');
       const token = jwt.sign(user.toJSON(), config.jwtSecret);
       Utils.sendResponse(res, httpStatus.OK,
         httpStatus.getStatusText(httpStatus.OK),
@@ -268,6 +269,9 @@ export async function leaveTeam(req, res) {
       try {
         await team.save();
         user.teamMember = '-1';
+        const creator = User.findById(team.creator)
+        const body = ' some one left your team ';
+        await Mail.sendEmail(creator.email, 'Some one left your team', body);
 
         try {
           await user.save();
