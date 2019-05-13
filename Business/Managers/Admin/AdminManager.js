@@ -769,6 +769,16 @@ export async function addChapter(req, res) {
     ), null, [{ message: error }]);
   }
 }
+export async function deleteChapter(req, res) {
+  try {
+    Chapter.findOneAndDelete({ name: req.body.name });
+    Utils.sendResponse(res, httpStatus.OK, httpStatus.getStatusText(httpStatus.OK));
+  } catch (error) {
+    Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(
+      httpStatus.BAD_REQUEST
+    ), null, [{ message: error }]);
+  }
+}
 // export async function makeAuserAJudge(req, res) {
 //   try {
 //     const user = await User.findOne({ email: req.params.email.toLowerCase() });

@@ -5,7 +5,7 @@ import {
   addTeamMember, deleteTeamMember, getAllDomains, createDomain, removeDomain, updateDomain,
   createChallenge, removeChallenge, updateChallenge, getAllDeadlines, createDeadline,
   updateDeadline, getMail, updateMail, getAllJudges, isJudge, getJudge, createJudge,
-  saveQuestions, addRegion, addChapter
+  saveQuestions, addRegion, addChapter, deleteChapter
 } from './AdminManager';
 import {
   createDomain as _createDomain, removeDomain as _removeDomain, updateDomain as _updateDomain,
@@ -93,5 +93,6 @@ router.route('/region')
   .post(addRegion);
 router.route('/chapter')
 //   .get(getAllChapters)
-  .post(addChapter);
+  .post(addChapter)
+  .delete(deleteChapter);
 export default router;
