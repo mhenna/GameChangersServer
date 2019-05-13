@@ -55,14 +55,16 @@ function sendEmail(receiverEmail, Subject, Body) {
     //     }
     //   });
     // });
-    transporter.sendMail(mailOptions, (error, response) => {
-      if (error) {
-        console.log('error', error);
-      } else {
-        console.log('HEERREEE', response);
-        transporter.close();
-      }
-    });
+
+
+    // transporter.sendMail(mailOptions, (error, response) => {
+    //   if (error) {
+    //     console.log('error', error);
+    //   } else {
+    //     console.log('HEERREEE', response);
+    //     transporter.close();
+    //   }
+    // });
   });
 }
 
