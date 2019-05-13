@@ -21,8 +21,9 @@ export async function registerUser(req, res) {
           [{ message: 'Cannot register at this time, please try again later.' }]);
         return;
       }
-      Mail.sendEmail(req.body.email, 'Account Creation for Game Changers',
-          'Your account for game changers has been created with the following credentials:\nemail: ' + req.body.email + '\npassword: '+ req.body.password + '\nYou can login at: http://ias00nan5eba.corp.emc.com/gamechanger/');
+      Mail.sendEmail(req.body.email, 'Welcome to GameChangers 2019!',
+      "Hi "+ req.body.name +",\nWelcome to GameChangers 2019!\n You can log in to your account at http://ec2-54-153-49-90.us-west-1.compute.amazonaws.com with the following credentials: \nemail:"
+      + req.body.email +"\npassword:" + req.body.password + "\nFor more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell. \nWe look forward to your participation./nGameChangers 2019");
       const token = jwt.sign(user.toJSON(), config.jwtSecret);
       Utils.sendResponse(res, httpStatus.OK,
         httpStatus.getStatusText(httpStatus.OK),
@@ -274,8 +275,9 @@ export async function leaveTeam(req, res) {
           console.log("AFTER SACE")
           Utils.updateUserIndex(user);
           const creator = await User.findById(team.creator);
-          const body = ' some one left your team ';
-          console.log(team.creator, '*****************',creator)
+          const body = "Hi "+ creator.name +",/n We are sad to let you know that "+ req.user.name +" has left your GameChangers "+ team.name +
+          " team./nFor more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell."+
+          "/nWishing you and your team success!/nGameChangers 2019";
           await Mail.sendEmail(creator.email, 'Some one left your team', body);
           const token = jwt.sign(user.toJSON(), config.jwtSecret);
           return Utils.sendResponse(res, httpStatus.OK,

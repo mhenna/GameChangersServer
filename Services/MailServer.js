@@ -37,6 +37,7 @@ const transporter = nodemailer.createTransport({
   }
 });
 
+
 function sendEmail(receiverEmail, Subject, Body) {
   return new Promise((resolve, reject) => {
     const mailOptions = {
@@ -66,5 +67,5 @@ function sendEmail(receiverEmail, Subject, Body) {
 }
 
 module.exports = {
-  sendEmail
+ sendEmail
 };
