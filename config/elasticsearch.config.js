@@ -108,14 +108,14 @@ async function addUserMapping() {
 async function addUsers() {
   return new Promise((resolve, reject) => {
     User.find({}, { __v: false }).lean().exec((err, users) => {
-      logger.info(`${users}UUUUUUUUUUUU`);
+     // logger.info(`${users}UUUUUUUUUUUU`);
       if (err) {
         console.log(err, 'ESESESES');
         logger.error(err);
         reject();
       }
       if (users.length==0) {
-        console.log(users, 'ESUSERS');
+       // console.log(users, 'ESUSERS');
         logger.error('No users found');
       } else {
         console.log(users, 'USEEERRRSSSSS');
