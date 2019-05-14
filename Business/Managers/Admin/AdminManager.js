@@ -662,10 +662,10 @@ export async function createJudge(req, res) {
         return;
       }
     }
-    const body = "Hi " + req.body.email + ",/nThank you for volunteering to judge the idea pitches for GameChangers 2019."+
-    "/nYou can log in to your account at http://ec2-54-153-49-90.us-west-1.compute.amazonaws.com with the following credentials:/nemail: " + req.body.email + "/npassword: " + password +
-    "/nFor more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell, or email us at DellGameChangers@dell.com."+
-    "/nWe appreciate your participation and partnership in encouraging innovation and team spirit at Dell,/nGameChangers 2019"
+    const body = "Hi " + req.body.email + ",\nThank you for volunteering to judge the idea pitches for GameChangers 2019."+
+    "\nYou can log in to your account at http://ec2-54-153-49-90.us-west-1.compute.amazonaws.com with the following credentials:\nemail: " + req.body.email + "\npassword: " + password +
+    "\nFor more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell, or email us at DellGameChangers@dell.com."+
+    "\nWe appreciate your participation and partnership in encouraging innovation and team spirit at Dell,\nGameChangers 2019"
      MailService.sendEmail(req.body.email, 'Welcome to GameChangers 2019!', body);
 
     // const judgment = new Judgment({ judgeId: user._id, ideasID: [] });

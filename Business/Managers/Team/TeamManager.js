@@ -71,9 +71,9 @@ export async function createTeam(req, res) {
                 previousParticipation: 'no',
                 teamMember: req.body.teamName
               });
-              const body = "Hi "+member.name +", /nWe are excited to let you know that "+ req.user.name +" has added you as a member of the GameChangers "+ req.body.teamName +
-              " team. \nYou can log in to your account at http://ec2-54-153-49-90.us-west-1.compute.amazonaws.com with the following credentials:/nemail: " + member.email + 
-              "/npassword: password123 /nFor more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell./nWe look forward to your participation./nGameChangers 2019";
+              const body = "Hi "+member.name +", \nWe are excited to let you know that "+ req.user.name +" has added you as a member of the GameChangers "+ req.body.teamName +
+              " team. \nYou can log in to your account at http://ec2-54-153-49-90.us-west-1.compute.amazonaws.com with the following credentials:\nemail: " + member.email + 
+              "\npassword: password123 \nFor more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell.\nWe look forward to your participation.\nGameChangers 2019";
               Mail.sendEmail(member.email, 'Welcome to GameChangers 2019!', body);
               /* eslint-disable no-await-in-loop */
               await tempMember.save();
@@ -476,10 +476,10 @@ export async function joinTeam(req, res) {
       const token = jwt.sign(user.toJSON(), config.jwtSecret);
       try {
         const creator = await User.findById(team.creator);
-        const body = "Hi "+ creator.name +",/n We are excited to let you know that "+ req.user.name +" has joined your GameChangers "+ req.body.teamName +
-        " team./nWe recommend you contact them at "+ creator.email +
-        " to share your idea and learn how they can enhance your idea development./nFor more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell."+
-        "/nWishing you and your team success!/nGameChangers 2019";
+        const body = "Hi "+ creator.name +",\n We are excited to let you know that "+ req.user.name +" has joined your GameChangers "+ req.body.teamName +
+        " team.\nWe recommend you contact them at "+ creator.email +
+        " to share your idea and learn how they can enhance your idea development.\nFor more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell."+
+        "\nWishing you and your team success!\nGameChangers 2019";
         await Mail.sendEmail(creator.email, 'Your GameChangers team has grown!', body);
       } catch (err) {
         console.log(err)
