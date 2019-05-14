@@ -47,14 +47,14 @@ function sendEmail(receiverEmail, Subject, Body) {
       text: Body
     };
 
-    //   transporter.sendMail(mailOptions, (error, info) => {
-    //     if (error) {
-    //       reject(error);
-    //     } else {
-    //       resolve(`Email sent: ${info.response}`);
-    //     }
-    //   });
-    // });
+       transporter.sendMail(mailOptions, (error, info) => {
+         if (error) {
+           reject(error);
+         } else {
+           resolve(`Email sent: ${info.response}`);
+         }
+       });
+     });
 
 
     // transporter.sendMail(mailOptions, (error, response) => {

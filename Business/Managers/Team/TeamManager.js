@@ -32,7 +32,7 @@ export async function createTeam(req, res) {
           httpStatus.getStatusText(httpStatus.BAD_REQUEST),
           null, [{ message: 'Team cannot have more than 5 members!' }]);
       }
-      if (req.body.members.length < 2) {
+      if (req.body.members.length < 1) {
         return Utils.sendResponse(res, httpStatus.BAD_REQUEST,
           httpStatus.getStatusText(httpStatus.BAD_REQUEST),
           null, [{ message: 'Team cannot have less than 2 members!' }]);
@@ -51,8 +51,10 @@ export async function createTeam(req, res) {
               uniqueMembers.push(member);
 
               Utils.updateUserIndex(userTemp);
-              const body = ' you have been added to a team ';
-              await Mail.sendEmail(member.email, 'added to team', body);
+              const body = "Hi "+member.name +", /nWe are excited to let you know that "+ req.user.name +" has added you as a member of the GameChangers "+ req.body.teamName +
+              " team. \nYou can log in to your account at http://ec2-54-153-49-90.us-west-1.compute.amazonaws.com with the following credentials:/nemail: " + member.email + 
+              "/npassword: password123 /nFor more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell./nWe look forward to your participation./nGameChangers 2019";
+              await Mail.sendEmail(member.email, 'Welcome to GameChangers 2019!', body);
               /* eslint-enable no-await-in-loop */
             } catch (err) {
               return Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR,

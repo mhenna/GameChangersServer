@@ -7,10 +7,15 @@ gridfs.mongo = mongoose.mongo;
 const connection = mongoose.connection;
 const Utils = require('../Business/Managers/utils');
 const mime = require('mime-types');
-
+let part = '';
 function write(req, res) {
   const gfs = gridfs(connection.db);
-  const part = req.files.file;
+  if (req.files == null || req.files == undefined){
+    part ={encoding: '',
+          data: ''};
+  }else{
+    part = req.files.file;
+  }
 
   const writeStream = gfs.createWriteStream({
     filename: req.user.teamMember + req.body.extension,
