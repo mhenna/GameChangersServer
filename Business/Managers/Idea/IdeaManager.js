@@ -156,6 +156,9 @@ function getAllIdeas(req, res) {
         if (err) {
           Utils.send400(err.message, res);
         }
+        if (team==null){
+          Utils.send400(err.message, res);
+        }
         User.findOne({ _id: team.creator }, (err, user) => {
           if (err) {
             Utils.send400(err.message, res);
