@@ -21,60 +21,80 @@ function upload(req, res) {
 }
 
 function download(req, res) {
-  if (req.user.isAdmin || req.user.isJudge || `${req.user.teamMember}.${mime.extension(mime.lookup(req.body.file))}` == req.body.file) gridfs.read(req, res);
-  else Utils.send400('Unauthorized', res);
+  if (req.user.isAdmin || req.user.isJudge || `${req.user.teamMember}.${mime.extension(mime.lookup(req.body.file))}` == req.body.file) {
+    gridfs.read(req, res);
+  } 
+  else 
+  return Utils.sendResponse(res, httpStatus.UNAUTHORIZED, httpStatus.getStatusText(httpStatus.UNAUTHORIZED), 
+    null, [{message: 'couldn\'t fetch corresponding team to create the idea'}]);
 }
 
 function createIdea(req, res) {
-  Idea.findOne({ teamName: req.user.teamMember }, (err, ret) => {
-    if (err) {
-      Utils.send400(err, res);
-      return;
-    }
-    if (ret) {
-      Utils.send400('This team has already submitted an idea', res);
-      return;
-    }
-    if (req.user.teamMember !== req.user.creatorOf) {
-      Utils.send400('Only the creator can add the idea', res);
-      return;
-    }
-
-    gridfs.replace(req, res);
-  });
+  try {
+    Idea.findOne({ teamName: req.user.teamMember }, (err, ret) => {
+      if (err) {
+        return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST),
+          null, [{message: err}]);
+      }
+      if (ret) {
+        return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST),
+          null, [{message: 'This team has already submitted an idea'}]);
+      }
+      if (req.user.teamMember !== req.user.creatorOf) {
+        return Utils.sendResponse(res, httpStatus.UNAUTHORIZED, httpStatus.getStatusText(httpStatus.UNAUTHORIZED),
+          null, [{message: 'Only the creator can add the idea'}]);
+      }
+  
+      gridfs.replace(req, res);
+    });
+  } catch (err) {
+    return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST), 
+      null, [{message: 'couldn\'t fetch corresponding team to create the idea'}]);
+  }
 }
 
 function editIdea(req, res) {
-  Idea.findOne({ teamName: req.user.teamMember }, (err, ret) => {
-    if (err) {
-      Utils.send400(err, res);
-      return;
-    }
-    if (!ret) {
-      Utils.send400('This team does not have an idea yet.', res);
-      return;
-    }
-    if (req.user.teamMember !== req.user.creatorOf) {
-      Utils.send400('Only the creator can edt the idea', res);
-      return;
-    }
-
-    if (req.files) {
-      gridfs.replace(req, res);
-    } else {
-      Idea.update({ teamName: req.user.teamMember }, { title: req.body.title, teamName: req.user.teamMember, description: req.body.description, category: req.body.challenge }, { new: true, upsert: true }, (err, doc) => {
-        if (err) {
-          Utils.send400('Cannot perform operation.', res);
-          return;
+  try{
+    Idea.findOne({ teamName: req.user.teamMember }, (err, ret) => {
+      if (err) {
+        return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST), 
+        null, [{message: err}]);
+      }
+      if (!ret) {
+        return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST), 
+        null, [{message: 'This team does not have an idea yet.'}]);
+      }
+      if (req.user.teamMember !== req.user.creatorOf) {
+        return Utils.sendResponse(res, httpStatus.UNAUTHORIZED, httpStatus.getStatusText(httpStatus.UNAUTHORIZED), 
+        null, [{message: 'Only the creator can edt the idea.'}]);
+      }
+      if (req.files) {
+        gridfs.replace(req, res);
+      } else {
+        try {
+          Idea.update({ teamName: req.user.teamMember }, 
+            { 
+              title: req.body.title, 
+              teamName: req.user.teamMember, 
+              description: req.body.description, 
+              category: req.body.challenge 
+            }, { new: true, upsert: true }, (err, doc) => {
+            if (err) {
+              return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST), 
+              null, [{message: err}]);
+            }
+            return Utils.sendResponse(res, httpStatus.OK, httpStatus.getStatusText(httpStatus.OK),{idea: doc})
+          });
+        } catch (err) {
+          return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST), 
+            null, [{message: 'couldn\'t update database'}]);
         }
-        res.status(200).json({
-          status: '200',
-          statustext: 'Ok',
-          idea: doc
-        });
-      });
-    }
-  });
+      }
+    });
+  } catch (err) {
+    return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST), 
+      null, [{message: 'couldn\'t fetch idea of the corresponding team from database'}])
+  }
 }
 function getIdea(req, res) {
   console.log('teamName:  ', req.params.teamName);
@@ -88,112 +108,151 @@ function getIdea(req, res) {
       httpStatus.getStatusText(httpStatus.BAD_REQUEST),
       null, [{ message: 'You do not have a team' }]);
   }
-  Idea.find({ teamName }, (err, idea) => {
-    if (err) {
-      Utils.send400(err.message, res);
-      return;
-    }
-    console.log(idea);
-    if (idea.length == 0) {
-      return Utils.sendResponse(res, httpStatus.NOT_FOUND,
-        httpStatus.getStatusText(httpStatus.NOT_FOUND),
-        null, [{ message: 'No ideas found' }]);
-    }
-    let index = 0;
-    const list = [];
-    idea.forEach((value) => {
-      const query = Team.findOne({ name: value.teamName });
-      query.exec((err, team) => {
-        if (err) {
-          Utils.send400(err.message, res);
-          return;
-        }
-        if (team) {
-          User.findOne({ _id: team.creator }, (err, user) => {
+  try {
+    Idea.find({ teamName }, (err, idea) => {
+      if (err) {
+        return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST), 
+              null, [{message: err}]);
+      }
+      console.log(idea);
+      if (idea.length == 0) {
+        return Utils.sendResponse(res, httpStatus.NOT_FOUND,
+          httpStatus.getStatusText(httpStatus.NOT_FOUND),
+          null, [{ message: 'No ideas found' }]);
+      }
+      let index = 0;
+      const list = [];
+      idea.forEach((value) => {
+        try {
+          const query = Team.findOne({ name: value.teamName });
+          query.exec((err, team) => {
             if (err) {
-              Utils.send400(err.message, res);
-              return;
+              return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST), 
+                null, [{message: err}]);
             }
-            if (user) {
-              const val = value.toObject();
-              val.location = user.location;
-              list.push(val);
-            }
-            index++;
-            if (index == idea.length) {
-              return res.status(200).json({
-                status: '200',
-                message: 'Success',
-                body: list[0]
-              });
+            if (team) {
+              try{
+                User.findOne({ _id: team.creator }, (err, user) => {
+                  if (err) {
+                    return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST), 
+                      null, [{message: err}]);
+                  }
+                  if (user) {
+                    const val = value.toObject();
+                    val.location = user.location;
+                    list.push(val);
+                  }
+                  index++;
+                  if (index == idea.length) {
+                    return res.status(200).json({
+                      status: '200',
+                      message: 'Success',
+                      body: list[0]
+                    });
+                  }
+                });
+              } catch (err) {
+                  return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST), 
+                    null, [{message: 'couldn\'t fetch user - the creator of team - from database'}]);
+              }
+            } else {
+              index++;
             }
           });
-        } else {
-          index++;
+        } catch (err) {
+            return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST), 
+              null, [{message: 'couldn\'t fetch team from database'}]);
         }
       });
     });
-  });
+  } catch (err) {
+      return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST), 
+        null, [{message: 'couldn\'t fetch idea of the corresponding team'}]);
+  }
 }
 
 
 function getAllIdeas(req, res) {
-  Idea.find({}, (err, idea) => {
-    if (err) {
-      console.log('err: ', err.message);
-      Utils.send400(err.message, res);
-      return;
-    }
-    if (!idea || idea.length == 0) {
-      console.log('err2: ', 'not idea');
-      Utils.send400('Internal server error', res);
-      return;
-    }
-    let index = 0;
-    const list = [];
-    idea.forEach((value) => {
-      Team.findOne({ name: value.teamName }, (err, team) => {
-        if (err) {
-          Utils.send400(err.message, res);
-        }
-        if (team==null){
-          Utils.send400("team not found", res);
-        }
-        User.findOne({ _id: team.creator }, (err, user) => {
-          if (err) {
-            Utils.send400(err.message, res);
-          }
-          if (user) {
-            const val = value.toObject();
-            val.location = user.location;
-            list.push(val);
-          }
-          index++;
-          if (index == idea.length) {
-            return res.status(200).json({
-              status: '200',
-              message: 'Success',
-              body: list
+  try {
+    Idea.find({teamName: {$ne: '-1'}}, (err, idea) => {
+      if (err) {
+        console.log('err: ', err.message);
+        return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST), 
+          null, [{message: err}]);
+      }
+      if (!idea || idea.length == 0) {
+        console.log('err2: ', 'not idea');
+        return  Utils.sendResponse(res, httpStatus.NOT_FOUND, httpStatus.getStatusText(httpStatus.NOT_FOUND), 
+          null, [{message: 'No ideas found'}]);
+      }
+      let index = 0;
+      const list = [];
+      idea.forEach((value) => {
+        try{
+            Team.findOne({ name: value.teamName }, (err, team) => {
+              if (err) {
+                return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST), 
+                  null, [{message: err}]);
+              }
+              if (team==null){
+                return  Utils.sendResponse(res, httpStatus.NOT_FOUND, httpStatus.getStatusText(httpStatus.NOT_FOUND), 
+                  null, [{message: 'Team not found'}]);;
+              }
+              try{
+                User.findOne({ _id: team.creator }, (err, user) => {
+                  if (err) {
+                    return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST), 
+                      null, [{message: err}]);
+                  }
+                  if (user) {
+                    const val = value.toObject();
+                    val.location = user.location;
+                    list.push(val);
+                  }
+                  index++;
+                  if (index == idea.length) {
+                    return res.status(200).json({
+                      status: '200',
+                      message: 'Success',
+                      body: list
+                    });
+                  }
+                });
+              } catch (err) {
+                  return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST), 
+                    null, [{message: 'couldn\'t fetch user - the creator of team - from database'}]);
+              }
             });
-          }
-        });
+
+        } catch (err) {
+            return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST), 
+              null, [{message: 'couldn\'t fetch team from database'}]);
+        }
       });
     });
-  });
+  } catch (err) {
+      return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST), 
+        null, [{message: 'couldn\'t fetch ideas from database'}]);
+  }
 }
 function getAllChallenges(req, res) {
-  Challenge.find({}, (err, challenges) => {
-    if (err) {
-      console.log('err: ', err.message);
-      Utils.send400(err.message, res);
-      return;
-    }
-    return res.status(200).json({
-      status: '200',
-      message: 'Success',
-      body: challenges
+  try {
+    Challenge.find({}, (err, challenges) => {
+      if (err) {
+        console.log('err: ', err);
+        return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST), 
+          null, [{message: err}]);;
+      }
+      return res.status(200).json({
+        status: '200',
+        message: 'Success',
+        body: challenges
+      });
     });
-  });
+  } catch (err) {
+      return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST), 
+        null, [{message: 'couldn\'t fetch categories from database'}]);
+  }
 }
 module.exports = {
   upload,
