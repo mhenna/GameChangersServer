@@ -662,8 +662,11 @@ export async function createJudge(req, res) {
         return;
       }
     }
-    //  MailService.sendEmail(req.body.email, 'Account Creation for Game Changers',
-    //           'Your account for game changers has been created with the following credentials:\nemail: ' + user.email + '\npassword: '+ password + '\nYou can login at: http://ias00nan5eba.corp.emc.com/gamechanger/');
+    const body = "Hi " + req.body.email + ",\nThank you for volunteering to judge the idea pitches for GameChangers 2019."+
+    "\nYou can log in to your account at http://ec2-54-153-49-90.us-west-1.compute.amazonaws.com with the following credentials:\nemail: " + req.body.email + "\npassword: " + password +
+    "\nFor more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell, or email us at DellGameChangers@dell.com."+
+    "\nWe appreciate your participation and partnership in encouraging innovation and team spirit at Dell,\nGameChangers 2019"
+     MailService.sendEmail(req.body.email, 'Welcome to GameChangers 2019!', body);
 
     // const judgment = new Judgment({ judgeId: user._id, ideasID: [] });
     // const judgeSaved = await judgment.save();
@@ -720,32 +723,63 @@ export async function isJudge(req, res) {
   }
 }
 
-export async function addRegion(req, res){
-  const region = new Region ({
+export async function addRegion(req, res) {
+  const region = new Region({
     name: req.body.name
-  })
-  try{
-    await region.save()
-    Utils.sendResponse(res, httpStatus.OK, httpStatus.getStatusText(httpStatus.OK))
-  } catch (error){
-      const uniqueColumnKey = Object.keys(error.errors)[0];
-      Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(
-        httpStatus.BAD_REQUEST
-      ), null, [{ message: error.errors[uniqueColumnKey].message }]);
+  });
+  try {
+    await region.save();
+    Utils.sendResponse(res, httpStatus.OK, httpStatus.getStatusText(httpStatus.OK));
+  } catch (error) {
+    const uniqueColumnKey = Object.keys(error.errors)[0];
+    Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(
+      httpStatus.BAD_REQUEST
+    ), null, [{ message: error.errors[uniqueColumnKey].message }]);
   }
 }
 
-export async function addChapter(req, res){
-  const chapter = new Chapter ({
-    name: req.body.name
-  })
-  try{
-    await chapter.save()
-    Utils.sendResponse(res, httpStatus.OK, httpStatus.getStatusText(httpStatus.OK))
-  } catch (error){
-      Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(
-        httpStatus.BAD_REQUEST
-      ), null, [{ message: error}]);
+export async function getRegions(req, res) {
+  try {
+    const regions = await Region.find({});
+    Utils.sendResponse(res, httpStatus.OK, httpStatus.getStatusText(httpStatus.OK), regions);
+  } catch (err) {
+    Utils.sendResponse(res, httpStatus.BAD_REQUEST,
+      httpStatus.getStatusText(httpStatus.BAD_REQUEST), null, [{ message: err.message }]);
+  }
+}
+
+export async function getChapters(req, res) {
+  try {
+    const chapters = await Chapter.find({}).populate('region', 'name');
+    Utils.sendResponse(res, httpStatus.OK, httpStatus.getStatusText(httpStatus.OK), chapters);
+  } catch (err) {
+    Utils.sendResponse(res, httpStatus.BAD_REQUEST,
+      httpStatus.getStatusText(httpStatus.BAD_REQUEST), null, [{ message: err.message }]);
+  }
+}
+
+export async function addChapter(req, res) {
+  const chapter = new Chapter({
+    name: req.body.name,
+    region: req.body.region
+  });
+  try {
+    await chapter.save();
+    Utils.sendResponse(res, httpStatus.OK, httpStatus.getStatusText(httpStatus.OK));
+  } catch (error) {
+    Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(
+      httpStatus.BAD_REQUEST
+    ), null, [{ message: error }]);
+  }
+}
+export async function deleteChapter(req, res) {
+  try {
+    Chapter.findOneAndDelete({ name: req.body.name });
+    Utils.sendResponse(res, httpStatus.OK, httpStatus.getStatusText(httpStatus.OK));
+  } catch (error) {
+    Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(
+      httpStatus.BAD_REQUEST
+    ), null, [{ message: error }]);
   }
 }
 // export async function makeAuserAJudge(req, res) {

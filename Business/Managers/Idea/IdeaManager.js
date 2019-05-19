@@ -35,6 +35,11 @@ function createIdea(req, res) {
       Utils.send400('This team has already submitted an idea', res);
       return;
     }
+    if (req.user.teamMember !== req.user.creatorOf) {
+      Utils.send400('Only the creator can add the idea', res);
+      return;
+    }
+
     gridfs.replace(req, res);
   });
 }
@@ -49,11 +54,15 @@ function editIdea(req, res) {
       Utils.send400('This team does not have an idea yet.', res);
       return;
     }
+    if (req.user.teamMember !== req.user.creatorOf) {
+      Utils.send400('Only the creator can edt the idea', res);
+      return;
+    }
 
     if (req.files) {
       gridfs.replace(req, res);
     } else {
-      Idea.update({ teamName: req.user.teamMember }, { title: req.body.title, teamName: req.user.teamMember, description: req.body.description }, { new: true, upsert: true }, (err, doc) => {
+      Idea.update({ teamName: req.user.teamMember }, { title: req.body.title, teamName: req.user.teamMember, description: req.body.description, category: req.body.challenge }, { new: true, upsert: true }, (err, doc) => {
         if (err) {
           Utils.send400('Cannot perform operation.', res);
           return;
@@ -68,7 +77,12 @@ function editIdea(req, res) {
   });
 }
 function getIdea(req, res) {
-  const teamName = req.params.TeamName ? req.params.teamName : req.user.teamMember;
+  console.log('teamName:  ', req.params.teamName);
+  console.log('TeamName:  ', req.params.TeamName);
+  console.log('teamMember:  ', req.user.teamMember);
+  let teamName = req.params.TeamName ? req.params.TeamName : req.params.teamName;
+  teamName = teamName == undefined ? req.user.teamMember : teamName;
+  console.log(teamName);
   if (teamName == -1) {
     return Utils.sendResponse(res, httpStatus.BAD_REQUEST,
       httpStatus.getStatusText(httpStatus.BAD_REQUEST),
@@ -79,6 +93,7 @@ function getIdea(req, res) {
       Utils.send400(err.message, res);
       return;
     }
+    console.log(idea);
     if (idea.length == 0) {
       return Utils.sendResponse(res, httpStatus.NOT_FOUND,
         httpStatus.getStatusText(httpStatus.NOT_FOUND),
@@ -140,6 +155,9 @@ function getAllIdeas(req, res) {
       Team.findOne({ name: value.teamName }, (err, team) => {
         if (err) {
           Utils.send400(err.message, res);
+        }
+        if (team==null){
+          Utils.send400("team not found", res);
         }
         User.findOne({ _id: team.creator }, (err, user) => {
           if (err) {

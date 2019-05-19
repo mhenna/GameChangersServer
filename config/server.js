@@ -63,6 +63,7 @@ if (config.env === 'development') {
 
 es.intializeES();
 
+// app.post('/register', (req, res) => { UserManager.registerUser(req); });
 app.post('/register', (req, res) => { 
   console.log(req.body)
   UserManager.registerUser(req,res) });

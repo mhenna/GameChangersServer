@@ -1,117 +1,126 @@
 import mongoose from 'mongoose';
 import httpStatus from 'http-status-codes';
+import jwt from 'jsonwebtoken';
 import config from '../../../config/config';
 import Team from './Models/team';
 import User from '../User/Models/user';
 // import MailService from '../../../Services/MailServer';
 import Utils from '../utils';
 import elasticsearch from '../../../Services/elasticsearch';
+import Mail from '../../../Services/MailServer';
 
 const esClient = elasticsearch.esClient;
 
-
 export async function createTeam(req, res) {
   const uniqueMembers = [];
-  try {
-    const user = await User.findOneAndUpdate({ email: req.user.email },
-      { teamMember: req.body.teamName, creatorOf: req.body.teamName }, { new: true });
+  let user;
+  if (req.user.teamMember == -1) {
+    try {
+      user = await User.findOneAndUpdate({ email: req.user.email },
+        { teamMember: req.body.teamName, creatorOf: req.body.teamName }, { new: true });
 
-    const teams = await Team.find({
-      name: req.body.teamName
-    });
-    if (teams.length > 0) {
-      return Utils.sendResponse(res, httpStatus.BAD_REQUEST,
-        httpStatus.getStatusText(httpStatus.BAD_REQUEST),
-        null, [{ message: 'Team name already exist' }]);
-    }
-    if (req.body.members.length > 5) {
-      return Utils.sendResponse(res, httpStatus.BAD_REQUEST,
-        httpStatus.getStatusText(httpStatus.BAD_REQUEST),
-        null, [{ message: 'Team cannot have more than 5 members!' }]);
-    }
-    const members = req.body.members;
-    for (let i = 0; i < members.length; i += 1) {
-      const member = members[i];
+      const teams = await Team.find({
+        name: req.body.teamName
+      });
+      if (teams.length > 0) {
+        return Utils.sendResponse(res, httpStatus.BAD_REQUEST,
+          httpStatus.getStatusText(httpStatus.BAD_REQUEST),
+          null, [{ message: 'Team name already exist' }]);
+      }
+      if (req.body.members.length > 5) {
+        return Utils.sendResponse(res, httpStatus.BAD_REQUEST,
+          httpStatus.getStatusText(httpStatus.BAD_REQUEST),
+          null, [{ message: 'Team cannot have more than 5 members!' }]);
+      }
+      if (req.body.members.length < 1) {
+        return Utils.sendResponse(res, httpStatus.BAD_REQUEST,
+          httpStatus.getStatusText(httpStatus.BAD_REQUEST),
+          null, [{ message: 'Team cannot have less than 2 members!' }]);
+      }
+
+      const members = req.body.members;
+      for (let i = 0; i < members.length; i += 1) {
+        const member = members[i];
+        try {
+          /* eslint-disable no-await-in-loop */
+          const tempUser = await User.findOne({ email: member.email.toLowerCase() });
+          if (tempUser != null) {
+            try {
+              const userTemp = await User.findOneAndUpdate({ email: member.email.toLowerCase() },
+                { $set: { teamMember: req.body.teamName } }, { new: true });
+              uniqueMembers.push(member);
+
+              Utils.updateUserIndex(userTemp);
+              const body = "Hi "+member.name +", /nWe are excited to let you know that "+ req.user.name +" has added you as a member of the GameChangers "+ req.body.teamName +
+              " team. \nYou can log in to your account at http://ec2-54-153-49-90.us-west-1.compute.amazonaws.com with the following credentials:/nemail: " + member.email + 
+              "/npassword: password123 /nFor more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell./nWe look forward to your participation./nGameChangers 2019";
+              await Mail.sendEmail(member.email, 'Welcome to GameChangers 2019!', body);
+              /* eslint-enable no-await-in-loop */
+            } catch (err) {
+              return Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR,
+                httpStatus.getStatusText(httpStatus.INTERNAL_SERVER_ERROR), null, [{ message: 'couldn\'t update users team Name from database.' }]);
+            }
+          }
+          if (tempUser == null) {
+            try {
+              const tempMember = new User({
+                email: member.email,
+                name: member.name,
+                password: 'password123',
+                passConf: 'password123',
+                region: user.region,
+                chapter: user.chapter,
+                previousParticipation: 'no',
+                teamMember: req.body.teamName
+              });
+              const body = "Hi "+member.name +", \nWe are excited to let you know that "+ req.user.name +" has added you as a member of the GameChangers "+ req.body.teamName +
+              " team. \nYou can log in to your account at http://ec2-54-153-49-90.us-west-1.compute.amazonaws.com with the following credentials:\nemail: " + member.email + 
+              "\npassword: password123 \nFor more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell.\nWe look forward to your participation.\nGameChangers 2019";
+              Mail.sendEmail(member.email, 'Welcome to GameChangers 2019!', body);
+              /* eslint-disable no-await-in-loop */
+              await tempMember.save();
+              /* eslint-enable no-await-in-loop */
+              uniqueMembers.push(member);
+            } catch (err) {
+              console.log(err, 'ERROORRRRRRRRRRRRRRRRRRRRRRR');
+              return Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR,
+                httpStatus.getStatusText(httpStatus.INTERNAL_SERVER_ERROR), null, [{ message: 'couldn\'t create database.' }]);
+            }
+          }
+        } catch (err) {
+          return Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR, httpStatus.getStatusText(
+            httpStatus.INTERNAL_SERVER_ERROR
+          ), null, [{ message: 'couldn\'t fetch users from database.' }]);
+        }
+      }
       try {
-        /* eslint-disable no-await-in-loop */
-        const tempUser = await User.findOne({ email: member.email.toLowerCase() });
-        if (tempUser != null) {
-          try {
-            const userTemp = await User.findOneAndUpdate({ email: member.email.toLowerCase() },
-              { $set: { teamMember: req.body.teamName } }, { new: true });
-            /* eslint-enable no-await-in-loop */
-            Utils.updateUserIndex(userTemp);
-          } catch (err) {
-            return Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR,
-              httpStatus.getStatusText(httpStatus.INTERNAL_SERVER_ERROR), null, [{ message: 'couldn\'t update users team Name from database.' }]);
-          }
-        }
-        if (tempUser == null) {
-          try {
-            const tempMember = new User({
-              email: member.email,
-              name: member.name,
-              password: 'password123',
-              passConf: 'password123',
-              location: user.location,
-              previousParticipation: 'no',
-              teamMember: req.body.teamName,
-              position: 'ww',
-              chapter: 'ay kalam'
-            });
-            const body = ' account has been created with your email and password is password123 please change it after the first time you log in';
-            Mail.sendEmail(member.email, 'account creation', body);
-            /* eslint-disable no-await-in-loop */
-            await tempMember.save();
-            /* eslint-enable no-await-in-loop */
-            uniqueMembers.push(member);
-
-            
-          } catch (err) {console.log(err,"ERROORRRRRRRRRRRRRRRRRRRRRRR")
-            return Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR,
-              httpStatus.getStatusText(httpStatus.INTERNAL_SERVER_ERROR), null, [{ message: 'couldn\'t create database.' }]);
-          }
-        }
-        
-        uniqueMembers.push(member)
+        const team = new Team({
+          name: req.body.teamName,
+          members: uniqueMembers,
+          creator: user._id,
+          allowOthers: req.body.allowOthers,
+          lookingFor: req.body.lookingFor,
+          region: user.region,
+          chapter: user.chapter
+        });
+        await team.save();
       } catch (err) {
+        console.log(err);
         return Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR, httpStatus.getStatusText(
           httpStatus.INTERNAL_SERVER_ERROR
-        ), null, [{ message: 'couldn\'t fetch users from database.' }]);
+        ), null, [{ message: 'couldn\'t save team .' }]);
       }
-    }
-
-    console.log()
-            console.log()
-            console.log()
-            console.log()
-            console.log()
-            console.log(uniqueMembers)
-            console.log()
-            console.log()
-            console.log()
-            console.log()
-            console.log()
-    try {
-      const team = new Team({
-        name: req.body.teamName,
-        members: uniqueMembers,
-        creator: user._id,
-        allowOthers: req.body.allowOthers,
-	      lookingFor: req.body.lookingFor
-      });
-      await team.save();
     } catch (err) {
       return Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR, httpStatus.getStatusText(
         httpStatus.INTERNAL_SERVER_ERROR
-      ), null, [{ message: 'couldn\'t save team .' }]);
+      ), null, [{ message: 'couldn\'t fetch users from database.' }]);
     }
-  } catch (err) {
-    return Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR, httpStatus.getStatusText(
-      httpStatus.INTERNAL_SERVER_ERROR
-    ), null, [{ message: 'couldn\'t fetch users from database.' }]);
+    const token = jwt.sign(user.toJSON(), config.jwtSecret);
+    return Utils.sendResponse(res, httpStatus.OK, httpStatus.getStatusText(httpStatus.OK), { message: 'Team has been created.', token });
   }
-  return Utils.sendResponse(res, httpStatus.OK, httpStatus.getStatusText(httpStatus.OK), { message: 'Team has been created.' });
+  return Utils.sendResponse(res, httpStatus.BAD_REQUEST,
+    httpStatus.getStatusText(httpStatus.BAD_REQUEST),
+    null, [{ message: 'you already have a team' }]);
 }
 
 
@@ -281,21 +290,21 @@ export async function deleteTeamMember(req, res) {
 }
 
 export async function addTeamMember(req, res) {
-  console.log("JKHEKKJHKJHEKKEJHFKJEFHKJHKJFHEKHEKFJKEFHKLFEHK")
-  console.log()
-  console.log()
-  console.log()
-  console.log()
-  console.log()
+  console.log('JKHEKKJHKJHEKKEJHFKJEFHKJHKJFHEKHEKFJKEFHKLFEHK');
+  console.log();
+  console.log();
+  console.log();
+  console.log();
+  console.log();
   try {
     const user = await User.findOne({ email: req.body.email.toLowerCase() });
 
-    console.log(user)
-    console.log()
-    console.log()
-    console.log()
-    console.log()
-    console.log()
+    console.log(user);
+    console.log();
+    console.log();
+    console.log();
+    console.log();
+    console.log();
     if (!user) {
       return Utils.sendResponse(res, httpStatus.NOT_FOUND, httpStatus.getStatusText(
         httpStatus.NOT_FOUND
@@ -312,7 +321,7 @@ export async function addTeamMember(req, res) {
       ), null, [{ message: `${user.email} is a judge or an admin.` }]);
     }
     try {
-      console.log("EMAILLLLLLLLLLLLLL", req.user.email)
+      console.log('EMAILLLLLLLLLLLLLL', req.user.email);
       const team = req.user.isAdmin ? await Team.findOne({ teamName: req.params.teamName })
         : await Team.findOne({ creator: req.user.email });
       if (!team) {
@@ -396,45 +405,92 @@ export async function viewTeam(req, res) {
 }
 
 export async function viewInvitations(req, res) {
-  
-try {
-    let teams = await Team.find({
+  try {
+    const teams = await Team.find({
       members: {
         $elemMatch: {
           email: req.user.email, accepted: false
         }
       }
     });
-    let respTeams = []
- for(var i = 0 ;i<teams.length;i++){
-   let team =teams[i];
-    const creator = await User.find({_id:team.creator});
-      let respTeam = {"creatorName":creator[0].email , ...team._doc}
-      respTeams.push(respTeam)
+    const respTeams = [];
+    for (let i = 0; i < teams.length; i++) {
+      const team = teams[i];
+      const creator = await User.find({ _id: team.creator });
+      const respTeam = { creatorName: creator[0].email, ...team._doc };
+      respTeams.push(respTeam);
     }
-   
+
     return Utils.sendResponse(res, httpStatus.OK,
-      httpStatus.getStatusText(httpStatus.OK),  respTeams );
+      httpStatus.getStatusText(httpStatus.OK), respTeams);
   } catch (err) {
     return Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR, httpStatus.getStatusText(httpStatus.INTERNAL_SERVER_ERROR), null, [{ message: 'couldn\'t connect to the database' }]);
   }
 }
 
-export async function joinTeam(req, res){
+
+export async function deleteTeam(req, res) {
   try {
-    const team = await Team.findOneAndUpdate({ name: req.body.teamName },{ $addToSet: { members: { email: req.user.email } } });
+    const team = await Team.findOne({ name: req.body.teamName, creator: req.user._id });
+    if (!team) {
+      console.log(req.user._id);
+      return Utils.sendResponse(res, httpStatus.NOT_FOUND,
+        httpStatus.getStatusText(httpStatus.NOT_FOUND), null, [{ message: 'Team not found or you have no authority to remove it!' }]);
+    }
+
+    try {
+      for (let i = 0; i < team.members.length; i++) {
+        /* eslint-disable no-await-in-loop */
+        const user = await User.findOneAndUpdate({ email: team.members[i].email.toLowerCase() },
+          { $set: { teamMember: '-1' } }, { new: true });
+        /* eslint-enable no-await-in-loop */
+        Utils.updateUserIndex(user);
+      }
+    } catch (err) {
+      return Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR, httpStatus.getStatusText(
+        httpStatus.INTERNAL_SERVER_ERROR
+      ), null, [{ message: 'couldn\'t update users teamMember field.' }]);
+    }
+
+    await team.remove();
+    return Utils.sendResponse(res, httpStatus.OK,
+      httpStatus.getStatusText(httpStatus.OK), { message: `Team ${req.body.teamName} has been deleted!` });
+  } catch (err) {
+    return Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR, httpStatus.getStatusText(httpStatus.INTERNAL_SERVER_ERROR), null, [{ message: 'couldn\'t connect to the database' }]);
+  }
+}
+
+export async function joinTeam(req, res) {
+  let team;
+  try {
+    team = await Team.findOneAndUpdate({ name: req.body.teamName },
+      { $addToSet: { members: { email: req.user.email } } });
     if (!team) {
       return Utils.sendResponse(res, httpStatus.NOT_FOUND, httpStatus.getStatusText(
         httpStatus.NOT_FOUND
       ), null, [{ message: 'Team not found.' }]);
     }
-    
+
     try {
       const user = await User.findOneAndUpdate({ email: req.user.email },
         { $set: { teamMember: req.body.teamName } }, { new: true });
       Utils.updateUserIndex(user);
+      const token = jwt.sign(user.toJSON(), config.jwtSecret);
+      try {
+        const creator = await User.findById(team.creator);
+        const body = "Hi "+ creator.name +",\n We are excited to let you know that "+ req.user.name +" has joined your GameChangers "+ req.body.teamName +
+        " team.\nWe recommend you contact them at "+ creator.email +
+        " to share your idea and learn how they can enhance your idea development.\nFor more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell."+
+        "\nWishing you and your team success!\nGameChangers 2019";
+        await Mail.sendEmail(creator.email, 'Your GameChangers team has grown!', body);
+      } catch (err) {
+        console.log(err)
+        return Utils.sendResponse(res, httpStatus.NOT_FOUND, httpStatus.getStatusText(
+          httpStatus.NOT_FOUND
+        ), null, [{ message: 'can\'t email team creator' }]);
+      }
       return Utils.sendResponse(res, httpStatus.OK,
-        httpStatus.getStatusText(httpStatus.OK), { message: `Invitation to ${req.body.teamName} has been accepted!` });
+        httpStatus.getStatusText(httpStatus.OK), { message: `Invitation to ${req.body.teamName} has been accepted!` , token});
     } catch (err) {
       return Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR,
         httpStatus.getStatusText(httpStatus.INTERNAL_SERVER_ERROR), null, [{ message: 'couldn\'t update user\'s team.' }]);
@@ -442,5 +498,36 @@ export async function joinTeam(req, res){
   } catch (err) {
     return Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR,
       httpStatus.getStatusText(httpStatus.INTERNAL_SERVER_ERROR), null, [{ message: 'couldn\'t update team.' }]);
+  }
+}
+
+export async function getAllTeams(_, res) {
+  try {
+    const teams = await Team.find().populate('creator', 'email name');
+    Utils.sendResponse(res, httpStatus.OK, httpStatus.getStatusText(httpStatus.OK),
+      teams);
+  } catch (error) {
+    Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR, httpStatus.getStatusText(
+      httpStatus.INTERNAL_SERVER_ERROR
+    ), null, [{ message: 'couldn\'t connect to the database' }]);
+  }
+}
+
+export async function editTeam(req, res) {
+  console.log(req.user.email)
+  try {
+    var team = await Team.findOne(
+      { name: req.body.teamName,
+        //creator: req.user.email 
+      })
+    team.allowOthers = req.body.allowOthers;
+    team.lookingFor = req.body.lookingFor;
+    await team.save();
+    return Utils.sendResponse(res, httpStatus.OK,
+      httpStatus.getStatusText(httpStatus.OK), { message: 'Team updated', team });
+  } catch (err) {
+    console.log(err)
+    return Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR,
+      httpStatus.getStatusText(httpStatus.INTERNAL_SERVER_ERROR), null, [{ message: 'couldn\'t fetch team please try again!' }]);
   }
 }

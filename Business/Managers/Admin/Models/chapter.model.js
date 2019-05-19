@@ -6,6 +6,12 @@ const chapterSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true
+  },
+  region: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Region',
+    required: true
+
   }
 });
 

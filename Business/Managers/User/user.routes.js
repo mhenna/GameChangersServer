@@ -3,7 +3,7 @@ import express from 'express';
 import validate from 'express-validation';
 import config from '../../../config/config';
 import { isRegistrationDeadlineReached, validateMailDomain, validateLocation } from './Config/user.middlewares';
-import { getAllDeadlines } from '../Admin/AdminManager';
+import { getAllDeadlines, getChapters, getRegions } from '../Admin/AdminManager';
 import {
 
   _login, _register, _forgotPassword, _resetPassword
@@ -36,6 +36,14 @@ router.route('/register')
   .post(registerUser);
 router.route('/deadlines')
   .get(getAllDeadlines);
+
+
+router.route('/regions')
+  .get(getRegions);
+
+router.route('/chapters')
+  .get(getChapters);
+  
 /** GET /users/user - Get the current user object */
 router.route('/user')
   .get(expressJwt({ secret: config.jwtSecret }), getUser);
@@ -69,6 +77,8 @@ router.route('/:id')
   .get(expressJwt({ secret: config.jwtSecret }), getAnotherUser);
 
 router.route('/leave-team')
-  .post(expressJwt({ secret: config.jwtSecret }), leaveTeam) 
+  .post(expressJwt({ secret: config.jwtSecret }), leaveTeam);
+
+
 
 export default router;

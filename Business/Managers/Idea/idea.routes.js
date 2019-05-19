@@ -30,6 +30,9 @@ router.route('/challenges')
 router.route('/edit')
   .post(ideasMiddlewares.isSubmissionDeadlineReached, IdeaManager.editIdea);
 
+router.route('/allIdeas')
+  .get(IdeaManager.getAllIdeas);
+
 router.route('/admin-ideas/:teamName')
   .get(expressJwt({ secret: config.jwtSecret }), isAdmin, IdeaManager.getIdea);
 
