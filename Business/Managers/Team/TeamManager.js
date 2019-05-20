@@ -8,6 +8,7 @@ import User from '../User/Models/user';
 import Utils from '../utils';
 import elasticsearch from '../../../Services/elasticsearch';
 import Mail from '../../../Services/MailServer';
+import forgotPassword2 from '../User/UserManager';
 
 const esClient = elasticsearch.esClient;
 
@@ -51,9 +52,8 @@ export async function createTeam(req, res) {
               uniqueMembers.push(member);
 
               Utils.updateUserIndex(userTemp);
-              const body = "Hi "+member.name +", /nWe are excited to let you know that "+ req.user.name +" has added you as a member of the GameChangers "+ req.body.teamName +
-              " team. \nYou can log in to your account at http://ec2-54-153-49-90.us-west-1.compute.amazonaws.com with the following credentials:/nemail: " + member.email + 
-              "/npassword: password123 /nFor more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell./nWe look forward to your participation./nGameChangers 2019";
+              const body = "Hi " + member.name + ", /nWe are excited to let you know that " + req.user.name + " has added you as a member of the GameChangers " + req.body.teamName +
+                " team. \nFor more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell.\nWe look forward to your participation.\nGameChangers 2019";
               await Mail.sendEmail(member.email, 'Welcome to GameChangers 2019!', body);
               /* eslint-enable no-await-in-loop */
             } catch (err) {
@@ -73,12 +73,25 @@ export async function createTeam(req, res) {
                 previousParticipation: 'no',
                 teamMember: req.body.teamName
               });
-              const body = "Hi "+member.name +", \nWe are excited to let you know that "+ req.user.name +" has added you as a member of the GameChangers "+ req.body.teamName +
-              " team. \nYou can log in to your account at http://ec2-54-153-49-90.us-west-1.compute.amazonaws.com with the following credentials:\nemail: " + member.email + 
-              "\npassword: password123 \nFor more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell.\nWe look forward to your participation.\nGameChangers 2019";
-              Mail.sendEmail(member.email, 'Welcome to GameChangers 2019!', body);
-              /* eslint-disable no-await-in-loop */
-              await tempMember.save();
+              await tempMember.save()
+
+              newUser(tempMember, req.user.name, req.body.teamName)
+
+              // /* eslint-disable no-await-in-loop */
+              // await tempMember.save();
+
+              // const request = {
+              //   body: {
+              //     "email" : member.email
+              //   }
+              // }
+              // console.log('helloooooooooooooooooooooooooooooo')
+              // forgotPassword2(member.email, res)
+              // console.log('afterrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr')
+              // const body = "Hi "+member.name +", \nWe are excited to let you know that "+ req.user.name +" has added you as a member of the GameChangers "+ req.body.teamName +
+              // " team. \nYou can log in to your account at http://ec2-54-153-49-90.us-west-1.compute.amazonaws.com with the following credentials:\nemail: " + member.email + 
+              // "\npassword: password123 \nFor more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell.\nWe look forward to your participation.\nGameChangers 2019";
+              // Mail.sendEmail(member.email, 'Welcome to GameChangers 2019!', body);
               /* eslint-enable no-await-in-loop */
               uniqueMembers.push(member);
             } catch (err) {
@@ -123,6 +136,41 @@ export async function createTeam(req, res) {
     null, [{ message: 'you already have a team' }]);
 }
 
+async function newUser(user, teamLeader, teamName) {
+  console.log('63287g23urg92fgudegf92o3fgdwgf3qwgeogfw')
+
+    const token = await Utils.getRandomToken();
+
+      await User.findByIdAndUpdate({ _id: user._id },
+        { resetPasswordToken: token, resetPasswordExpires: Date.now() + 86400000 },
+        { upsert: true, new: true });
+      /**
+     * TODO send a mail to the user containing the token.
+     */
+     // const body = "Hi "+member.name +", \nWe are excited to let you know that "+ req.user.name +" has added you as a member of the GameChangers "+ req.body.teamName +
+              // " team. \nYou can log in to your account at http://ec2-54-153-49-90.us-west-1.compute.amazonaws.com with the following credentials:\nemail: " + member.email + 
+              // "\npassword: password123 \nFor more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell.\nWe look forward to your participation.\nGameChangers 2019";
+      let body = `Hi ${user.name} ,
+        We are excited to let you know that ${teamLeader} has added you as a member of the\n GameChangers ${teamName} team.
+      Please follow this link to set a password and be able to login to your account
+      http://ec2-54-153-49-90.us-west-1.compute.amazonaws.com/#/reset-password/${token}
+      For more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell.
+      We look forward to your participation.
+      GameChangers 2019
+    Regards,
+      `;
+
+      // mailService.sendEmail(user.email, "Password reset", body)
+      //   .then(message => res.status(200).json({ message, token }))
+      //   .catch(error => res.status(500).json({ message: error }));
+      // if (process.env.ENVIRONMENT === 'testing') {
+      //   Utils.sendResponse(res, httpStatus.OK, httpStatus.getStatusText(httpStatus.OK),
+      //     token);
+      //   return;
+      // }
+
+      Mail.sendEmail(user.email, 'Password Set', body);
+}
 
 export async function searchUsers(req, res) {
   const email = req.params.email.toLowerCase();
@@ -184,10 +232,10 @@ async function acceptInvitation(req, res) {
     try {
       await Team.update({}, {
         $pull:
-          {
-            members:
-              { accepted: false, email: req.user.email }
-          }
+        {
+          members:
+            { accepted: false, email: req.user.email }
+        }
       }, { multi: true });
       try {
         const user = await User.findOneAndUpdate({ email: req.user.email },
@@ -478,10 +526,10 @@ export async function joinTeam(req, res) {
       const token = jwt.sign(user.toJSON(), config.jwtSecret);
       try {
         const creator = await User.findById(team.creator);
-        const body = "Hi "+ creator.name +",\n We are excited to let you know that "+ req.user.name +" has joined your GameChangers "+ req.body.teamName +
-        " team.\nWe recommend you contact them at "+ creator.email +
-        " to share your idea and learn how they can enhance your idea development.\nFor more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell."+
-        "\nWishing you and your team success!\nGameChangers 2019";
+        const body = "Hi " + creator.name + ",\n We are excited to let you know that " + req.user.name + " has joined your GameChangers " + req.body.teamName +
+          " team.\nWe recommend you contact them at " + creator.email +
+          " to share your idea and learn how they can enhance your idea development.\nFor more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell." +
+          "\nWishing you and your team success!\nGameChangers 2019";
         await Mail.sendEmail(creator.email, 'Your GameChangers team has grown!', body);
       } catch (err) {
         console.log(err)
@@ -490,7 +538,7 @@ export async function joinTeam(req, res) {
         ), null, [{ message: 'can\'t email team creator' }]);
       }
       return Utils.sendResponse(res, httpStatus.OK,
-        httpStatus.getStatusText(httpStatus.OK), { message: `Invitation to ${req.body.teamName} has been accepted!` , token});
+        httpStatus.getStatusText(httpStatus.OK), { message: `Invitation to ${req.body.teamName} has been accepted!`, token });
     } catch (err) {
       return Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR,
         httpStatus.getStatusText(httpStatus.INTERNAL_SERVER_ERROR), null, [{ message: 'couldn\'t update user\'s team.' }]);
@@ -517,7 +565,8 @@ export async function editTeam(req, res) {
   console.log(req.user.email)
   try {
     var team = await Team.findOne(
-      { name: req.body.teamName,
+      {
+        name: req.body.teamName,
         //creator: req.user.email 
       })
     team.allowOthers = req.body.allowOthers;
