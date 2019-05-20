@@ -114,6 +114,7 @@ export async function forgotPassword(req, res) {
     }
     try {
       const token = await Utils.getRandomToken();
+
       try {
         await User.findByIdAndUpdate({ _id: user._id },
           { resetPasswordToken: token, resetPasswordExpires: Date.now() + 86400000 },
@@ -121,20 +122,26 @@ export async function forgotPassword(req, res) {
         /**
        * TODO send a mail to the user containing the token.
        */
-        //   let body = `Dear ${user.name} ,
-        //     Please follow this link to reset your password
-        // ${config.frontEndUrl}/reset-password?token=${token}
-        // Regards,
-        //   `;
+
+          let body = `Dear ${user.name} ,
+            Please follow this link to reset your password
+        ${config.frontEndUrl}/#/reset-password/${token}
+        Regards,
+          `;
 
         // mailService.sendEmail(user.email, "Password reset", body)
         //   .then(message => res.status(200).json({ message, token }))
         //   .catch(error => res.status(500).json({ message: error }));
-        // if (process.env.ENVIRONMENT === 'testing') {
-        //   Utils.sendResponse(res, httpStatus.OK, httpStatus.getStatusText(httpStatus.OK),
-        //     token);
-        //   return;
-        // }
+        
+        //   console.log('AFTER SEND EMAILLLLLLLLLLLL', process.env.ENVIRONMENT)
+        if (process.env.ENVIRONMENT === 'testing') {
+          Utils.sendResponse(res, httpStatus.OK, httpStatus.getStatusText(httpStatus.OK),
+            token);
+          return;
+        }
+
+        Mail.sendEmail(req.body.email, 'Welcome to GameChangers 2019!', body);
+
         Utils.sendResponse(res, httpStatus.OK, httpStatus.getStatusText(httpStatus.OK), token);
       } catch (error) {
         Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR, httpStatus.getStatusText(
@@ -152,6 +159,7 @@ export async function forgotPassword(req, res) {
     ), null, [{ message: 'couldn\'t connect to the database' }]);
   }
 }
+
 
 export async function resetPassword(req, res) {
   try {

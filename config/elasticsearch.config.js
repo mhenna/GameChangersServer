@@ -118,7 +118,7 @@ async function addUsers() {
         console.log(users, 'ESUSERS');
         logger.error('No users found');
       } else {
-        console.log(users, 'USEEERRRSSSSS');
+        // console.log(users, 'USEEERRRSSSSS');
         bulkIndex(userType, users);
       }
       resolve();
