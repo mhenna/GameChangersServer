@@ -23,10 +23,10 @@ function upload(req, res) {
 function download(req, res) {
   if (req.user.isAdmin || req.user.isJudge || `${req.user.teamMember}.${mime.extension(mime.lookup(req.body.file))}` == req.body.file) {
     gridfs.read(req, res);
-  } 
-  else 
-  return Utils.sendResponse(res, httpStatus.UNAUTHORIZED, httpStatus.getStatusText(httpStatus.UNAUTHORIZED), 
-    null, [{message: 'couldn\'t fetch corresponding team to create the idea'}]);
+  } else {
+    return Utils.sendResponse(res, httpStatus.UNAUTHORIZED, httpStatus.getStatusText(httpStatus.UNAUTHORIZED),
+      null, [{ message: 'couldn\'t fetch corresponding team to create the idea' }]);
+  }
 }
 
 function createIdea(req, res) {
@@ -34,66 +34,66 @@ function createIdea(req, res) {
     Idea.findOne({ teamName: req.user.teamMember }, (err, ret) => {
       if (err) {
         return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST),
-          null, [{message: err}]);
+          null, [{ message: err }]);
       }
       if (ret) {
         return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST),
-          null, [{message: 'This team has already submitted an idea'}]);
+          null, [{ message: 'This team has already submitted an idea' }]);
       }
       if (req.user.teamMember !== req.user.creatorOf) {
         return Utils.sendResponse(res, httpStatus.UNAUTHORIZED, httpStatus.getStatusText(httpStatus.UNAUTHORIZED),
-          null, [{message: 'Only the creator can add the idea'}]);
+          null, [{ message: 'Only the creator can add the idea' }]);
       }
-  
+
       gridfs.replace(req, res);
     });
   } catch (err) {
-    return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST), 
-      null, [{message: 'couldn\'t fetch corresponding team to create the idea'}]);
+    return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST),
+      null, [{ message: 'couldn\'t fetch corresponding team to create the idea' }]);
   }
 }
 
 function editIdea(req, res) {
-  try{
+  try {
     Idea.findOne({ teamName: req.user.teamMember }, (err, ret) => {
       if (err) {
-        return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST), 
-        null, [{message: err}]);
+        return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST),
+          null, [{ message: err }]);
       }
       if (!ret) {
-        return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST), 
-        null, [{message: 'This team does not have an idea yet.'}]);
+        return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST),
+          null, [{ message: 'This team does not have an idea yet.' }]);
       }
       if (req.user.teamMember !== req.user.creatorOf) {
-        return Utils.sendResponse(res, httpStatus.UNAUTHORIZED, httpStatus.getStatusText(httpStatus.UNAUTHORIZED), 
-        null, [{message: 'Only the creator can edt the idea.'}]);
+        return Utils.sendResponse(res, httpStatus.UNAUTHORIZED, httpStatus.getStatusText(httpStatus.UNAUTHORIZED),
+          null, [{ message: 'Only the creator can edt the idea.' }]);
       }
       if (req.files) {
         gridfs.replace(req, res);
       } else {
         try {
-          Idea.update({ teamName: req.user.teamMember }, 
-            { 
-              title: req.body.title, 
-              teamName: req.user.teamMember, 
-              description: req.body.description, 
-              category: req.body.challenge 
+          Idea.update({ teamName: req.user.teamMember },
+            {
+              title: req.body.title,
+              teamName: req.user.teamMember,
+              description: req.body.description,
+              category: req.body.challenge
             }, { new: true, upsert: true }, (err, doc) => {
-            if (err) {
-              return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST), 
-              null, [{message: err}]);
-            }
-            return Utils.sendResponse(res, httpStatus.OK, httpStatus.getStatusText(httpStatus.OK),{idea: doc})
-          });
+              if (err) {
+                return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST),
+                  null, [{ message: err }]);
+              }
+              return Utils.sendResponse(res, httpStatus.OK, httpStatus.getStatusText(httpStatus.OK), { idea: doc });
+            });
         } catch (err) {
-          return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST), 
-            null, [{message: 'couldn\'t update database'}]);
+          return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST),
+            null, [{ message: 'couldn\'t update database' }]);
         }
       }
     });
   } catch (err) {
-    return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST), 
-      null, [{message: 'couldn\'t fetch idea of the corresponding team from database'}])
+    return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST),
+      null, [{ message: 'couldn\'t fetch idea of the corresponding team from database' }]);
   }
 }
 function getIdea(req, res) {
@@ -111,8 +111,8 @@ function getIdea(req, res) {
   try {
     Idea.find({ teamName }, (err, idea) => {
       if (err) {
-        return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST), 
-              null, [{message: err}]);
+        return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST),
+          null, [{ message: err }]);
       }
       console.log(idea);
       if (idea.length == 0) {
@@ -127,15 +127,15 @@ function getIdea(req, res) {
           const query = Team.findOne({ name: value.teamName });
           query.exec((err, team) => {
             if (err) {
-              return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST), 
-                null, [{message: err}]);
+              return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST),
+                null, [{ message: err }]);
             }
             if (team) {
-              try{
+              try {
                 User.findOne({ _id: team.creator }, (err, user) => {
                   if (err) {
-                    return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST), 
-                      null, [{message: err}]);
+                    return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST),
+                      null, [{ message: err }]);
                   }
                   if (user) {
                     const val = value.toObject();
@@ -152,64 +152,68 @@ function getIdea(req, res) {
                   }
                 });
               } catch (err) {
-                  return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST), 
-                    null, [{message: 'couldn\'t fetch user - the creator of team - from database'}]);
+                return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST),
+                  null, [{ message: 'couldn\'t fetch user - the creator of team - from database' }]);
               }
             } else {
               index++;
             }
           });
         } catch (err) {
-            return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST), 
-              null, [{message: 'couldn\'t fetch team from database'}]);
+          return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST),
+            null, [{ message: 'couldn\'t fetch team from database' }]);
         }
       });
     });
   } catch (err) {
-      return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST), 
-        null, [{message: 'couldn\'t fetch idea of the corresponding team'}]);
+    return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST),
+      null, [{ message: 'couldn\'t fetch idea of the corresponding team' }]);
   }
 }
 
 
 function getAllIdeas(req, res) {
   try {
-    Idea.find({teamName: {$ne: '-1'}}, (err, idea) => {
+    Idea.find({ teamName: { $ne: '-1' } }, (err, idea) => {
+      console.log(idea);
       if (err) {
         console.log('err: ', err.message);
-        return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST), 
-          null, [{message: err}]);
+        return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST),
+          null, [{ message: err }]);
       }
       if (!idea || idea.length == 0) {
         console.log('err2: ', 'not idea');
-        return  Utils.sendResponse(res, httpStatus.NOT_FOUND, httpStatus.getStatusText(httpStatus.NOT_FOUND), 
-          null, [{message: 'No ideas found'}]);
+        return Utils.sendResponse(res, httpStatus.NOT_FOUND, httpStatus.getStatusText(httpStatus.NOT_FOUND),
+          null, [{ message: 'No ideas found' }]);
       }
       let index = 0;
       const list = [];
       idea.forEach((value) => {
-        try{
-            Team.findOne({ name: value.teamName }, (err, team) => {
-              if (err) {
-                return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST), 
-                  null, [{message: err}]);
-              }
-              if (team==null){
-                return  Utils.sendResponse(res, httpStatus.NOT_FOUND, httpStatus.getStatusText(httpStatus.NOT_FOUND), 
-                  null, [{message: 'Team not found'}]);;
-              }
-              try{
+        try {
+          Team.findOne({ name: value.teamName }, (err, team) => {
+            if (err) {
+              return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST),
+                null, [{ message: err }]);
+            }
+            if (team == null) {
+              index++
+              console.log(value.teamName,"NULL")
+              //
+            }else {
+              try {
                 User.findOne({ _id: team.creator }, (err, user) => {
+                  console.log(user,"USER", team.name)
                   if (err) {
-                    return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST), 
-                      null, [{message: err}]);
+                    return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST),
+                      null, [{ message: err }]);
                   }
                   if (user) {
+                    index++
                     const val = value.toObject();
                     val.location = user.location;
-                    list.push(val);
+                    list.push(val);                
                   }
-                  index++;
+                  console.log("##########",index, idea.length)
                   if (index == idea.length) {
                     return res.status(200).json({
                       status: '200',
@@ -219,20 +223,20 @@ function getAllIdeas(req, res) {
                   }
                 });
               } catch (err) {
-                  return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST), 
-                    null, [{message: 'couldn\'t fetch user - the creator of team - from database'}]);
-              }
-            });
-
+                return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST),
+                  null, [{ message: 'couldn\'t fetch user - the creator of team - from database' }]);
+              } 
+}
+          });
         } catch (err) {
-            return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST), 
-              null, [{message: 'couldn\'t fetch team from database'}]);
+          return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST),
+            null, [{ message: 'couldn\'t fetch team from database' }]);
         }
       });
     });
   } catch (err) {
-      return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST), 
-        null, [{message: 'couldn\'t fetch ideas from database'}]);
+    return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST),
+      null, [{ message: 'couldn\'t fetch ideas from database' }]);
   }
 }
 function getAllChallenges(req, res) {
@@ -240,8 +244,8 @@ function getAllChallenges(req, res) {
     Challenge.find({}, (err, challenges) => {
       if (err) {
         console.log('err: ', err);
-        return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST), 
-          null, [{message: err}]);;
+        return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST),
+          null, [{ message: err }]);
       }
       return res.status(200).json({
         status: '200',
@@ -250,8 +254,8 @@ function getAllChallenges(req, res) {
       });
     });
   } catch (err) {
-      return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST), 
-        null, [{message: 'couldn\'t fetch categories from database'}]);
+    return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST),
+      null, [{ message: 'couldn\'t fetch categories from database' }]);
   }
 }
 module.exports = {
