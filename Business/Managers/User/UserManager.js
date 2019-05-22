@@ -22,8 +22,8 @@ export async function registerUser(req, res) {
         return;
       }
       Mail.sendEmail(req.body.email, 'Welcome to GameChangers 2019!',
-      "Hi "+ req.body.name +",\nWelcome to GameChangers 2019!\n You can log in to your account at http://ec2-54-153-49-90.us-west-1.compute.amazonaws.com with the following credentials: \nemail:"
-      + req.body.email +"\npassword:" + req.body.password + "\nFor more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell. \nWe look forward to your participation.\nGameChangers 2019");
+      "Hi "+ req.body.name +",\nWelcome to GameChangers 2019!\n You can log in to your account at http://ec2-54-153-49-90.us-west-1.compute.amazonaws.com with the following your credentials"
+      + "\nFor more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell. \nWe look forward to your participation.\nGameChangers 2019");
       const token = jwt.sign(user.toJSON(), config.jwtSecret);
       Utils.sendResponse(res, httpStatus.OK,
         httpStatus.getStatusText(httpStatus.OK),
