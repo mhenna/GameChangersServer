@@ -28,7 +28,7 @@ export async function createTeam(req, res) {
           httpStatus.getStatusText(httpStatus.BAD_REQUEST),
           null, [{ message: 'Team name already exist' }]);
       }
-      if (req.body.members.length > 5) {
+      if (req.body.members.length > 4) {
         return Utils.sendResponse(res, httpStatus.BAD_REQUEST,
           httpStatus.getStatusText(httpStatus.BAD_REQUEST),
           null, [{ message: 'Team cannot have more than 5 members!' }]);
@@ -54,7 +54,9 @@ export async function createTeam(req, res) {
               Utils.updateUserIndex(userTemp);
               const body = `Hi ${member.name}, /nWe are excited to let you know that ${req.user.name} has added you as a member of the GameChangers ${req.body.teamName
               } team. \nFor more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell.\nWe look forward to your participation.\nGameChangers 2019`;
-              await Mail.sendEmail(member.email, 'Welcome to GameChangers 2019!', body);
+              if (member.email != req.user.email) {
+                await Mail.sendEmail(member.email, 'Welcome to GameChangers 2019!', body);
+              }
               /* eslint-enable no-await-in-loop */
             } catch (err) {
               return Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR,
@@ -64,7 +66,7 @@ export async function createTeam(req, res) {
           if (tempUser == null) {
             try {
               const tempMember = new User({
-                email: member.email,
+                email: member.email.toLowerCase(),
                 name: member.name,
                 password: 'password123',
                 passConf: 'password123',
@@ -306,7 +308,7 @@ export async function deleteTeamMember(req, res) {
         return Utils.sendResponse(res, httpStatus.NOT_FOUND,
           httpStatus.getStatusText(httpStatus.NOT_FOUND), null, [{ message: 'Team does not contain the required user.' }]);
       }
-      if (newMembers.length < 2) {
+      if (newMembers.length < 1) {
         return Utils.sendResponse(res, httpStatus.BAD_REQUEST,
           httpStatus.getStatusText(httpStatus.BAD_REQUEST), null, [{ message: 'Team must at least have 2 members.' }]);
       }
@@ -350,7 +352,7 @@ export async function addTeamMember(req, res) {
         httpStatus.NOT_FOUND
       ), null, [{ message: 'Team not found.' }]);
     }
-    if (team.members.length >= 5) {
+    if (team.members.length >= 4) {
       return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(
         httpStatus.BAD_REQUEST
       ), null, [{ message: 'Team cannot have more than 5 members!' }]);
@@ -359,7 +361,7 @@ export async function addTeamMember(req, res) {
       user = await User.findOne({ email: req.body.email.toLowerCase() });
       if (user == null) {
         const tempMember = new User({
-          email: req.body.email,
+          email: req.body.email.toLowerCase(),
           name: req.body.name,
           password: 'password123',
           passConf: 'password123',
@@ -370,9 +372,9 @@ export async function addTeamMember(req, res) {
         });
         await tempMember.save();
         try {
-        // newUser(tempMember, req.user.name, req.body.teamName);
+          newUser(tempMember, req.user.name, req.body.teamName);
           const rests = await Team.findOneAndUpdate({ creator: req.user._id }, {
-            $push: { members: { email: req.body.email, name: req.body.name } }
+            $push: { members: { email: req.body.email.toLowerCase(), name: req.body.name } }
 
           });
           console.log('new team', rests);
@@ -395,7 +397,7 @@ export async function addTeamMember(req, res) {
       }
       try {
         const rest = await Team.findOneAndUpdate({ creator: req.user._id }, {
-          $push: { members: { email: req.body.email, name: req.body.name } }
+          $push: { members: { email: req.body.email.toLowerCase(), name: req.body.name } }
         });
 
         console.log('TEAM NEW', rest);
