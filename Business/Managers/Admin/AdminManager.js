@@ -510,7 +510,7 @@ export async function addTeamMember(req, res) { // change user's teamMember to t
 
 export async function deleteTeamMember(req, res) {
   try {
-    const team = await Team.findOne({ name: req.params.teamName.toLowerCase() });
+    const team = await Team.findOne({ name: req.params.teamName });
     if (!team) {
       Utils.sendResponse(res, httpStatus.NOT_FOUND, httpStatus.getStatusText(
         httpStatus.NOT_FOUND
