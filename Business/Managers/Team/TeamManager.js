@@ -45,24 +45,24 @@ export async function createTeam(req, res) {
         try {
           /* eslint-disable no-await-in-loop */
           const tempUser = await User.findOne({ email: member.email.toLowerCase() });
-          if (tempUser != null) {
-            try {
-              const userTemp = await User.findOneAndUpdate({ email: member.email.toLowerCase() },
-                { $set: { teamMember: req.body.teamName } }, { new: true });
-              uniqueMembers.push(member);
+          // if (tempUser != null) {
+          //   // try {
+          //   //   const userTemp = await User.findOneAndUpdate({ email: member.email.toLowerCase() },
+          //   //     { $set: { teamMember: req.body.teamName } }, { new: true });
+          //   //   uniqueMembers.push(member);
 
-              Utils.updateUserIndex(userTemp);
-              const body = `Hi ${member.name}, /nWe are excited to let you know that ${req.user.name} has added you as a member of the GameChangers ${req.body.teamName
-              } team. \nFor more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell.\nWe look forward to your participation.\nGameChangers 2019`;
-              if (member.email != req.user.email) {
-                await Mail.sendEmail(member.email, 'Welcome to GameChangers 2019!', body);
-              }
-              /* eslint-enable no-await-in-loop */
-            } catch (err) {
-              return Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR,
-                httpStatus.getStatusText(httpStatus.INTERNAL_SERVER_ERROR), null, [{ message: 'couldn\'t update users team Name from database.' }]);
-            }
-          }
+          //   //   Utils.updateUserIndex(userTemp);
+          //   //   const body = `Hi ${member.name}, /nWe are excited to let you know that ${req.user.name} has added you as a member of the GameChangers ${req.body.teamName
+          //   //   } team. \nFor more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell.\nWe look forward to your participation.\nGameChangers 2019`;
+          //   //   if (member.email != req.user.email) {
+          //   //     await Mail.sendEmail(member.email, 'Welcome to GameChangers 2019!', body);
+          //   //   }
+          //   //   /* eslint-enable no-await-in-loop */
+          //   // } catch (err) {
+          //   //   return Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR,
+          //   //     httpStatus.getStatusText(httpStatus.INTERNAL_SERVER_ERROR), null, [{ message: 'couldn\'t update users team Name from database.' }]);
+          //   // }
+          // }
           if (tempUser == null) {
             try {
               const tempMember = new User({
@@ -102,6 +102,24 @@ export async function createTeam(req, res) {
                 httpStatus.getStatusText(httpStatus.INTERNAL_SERVER_ERROR), null, [{ message: 'couldn\'t create database.' }]);
             }
           }
+          else{
+            try {
+              const userTemp = await User.findOneAndUpdate({ email: member.email.toLowerCase() },
+                { $set: { teamMember: req.body.teamName } }, { new: true });
+              uniqueMembers.push(member);
+
+              Utils.updateUserIndex(userTemp);
+              const body = `Hi ${member.name}, /nWe are excited to let you know that ${req.user.name} has added you as a member of the GameChangers ${req.body.teamName
+              } team. \nFor more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell.\nWe look forward to your participation.\nGameChangers 2019`;
+              // if (member.email != req.user.email) {
+              //   await Mail.sendEmail(member.email, 'Welcome to GameChangers 2019!', body);
+              // }
+              /* eslint-enable no-await-in-loop */
+            } catch (err) {
+              return Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR,
+                httpStatus.getStatusText(httpStatus.INTERNAL_SERVER_ERROR), null, [{ message: 'couldn\'t update users team Name from database.' }]);
+            }
+          }
         } catch (err) {
           return Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR, httpStatus.getStatusText(
             httpStatus.INTERNAL_SERVER_ERROR
@@ -138,7 +156,7 @@ export async function createTeam(req, res) {
     null, [{ message: 'you already have a team' }]);
 }
 
-async function newUser(user, teamLeader, teamName) {
+export async function newUser(user, teamLeader, teamName) {
   console.log('63287g23urg92fgudegf92o3fgdwgf3qwgeogfw');
 
   const token = await Utils.getRandomToken();
