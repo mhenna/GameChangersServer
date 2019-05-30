@@ -111,9 +111,9 @@ export async function createTeam(req, res) {
               Utils.updateUserIndex(userTemp);
               const body = `Hi ${member.name}, /nWe are excited to let you know that ${req.user.name} has added you as a member of the GameChangers ${req.body.teamName
               } team. \nFor more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell.\nWe look forward to your participation.\nGameChangers 2019`;
-              if (member.email !== req.user.email) {
-                await Mail.sendEmail(member.email, 'Welcome to GameChangers 2019!', body);
-              }
+            //  if (member.email !== req.user.email) {
+             //   await Mail.sendEmail(member.email, 'Welcome to GameChangers 2019!', body);
+             // }
               /* eslint-enable no-await-in-loop */
             } catch (err) {
               return Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR,
