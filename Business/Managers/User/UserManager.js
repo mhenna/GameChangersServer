@@ -69,9 +69,11 @@ export async function loginUser(req, res) {
         if (isMatch) {
           const token = jwt.sign(user.toJSON(), config.jwtSecret);
           const isAdmin = !!user.toJSON().isAdmin;
+          const isCLeader = user.toJSON().isCLeader;
+          const isRLeader = user.toJSON().isRLeader;
           Utils.sendResponse(res, httpStatus.OK, httpStatus.getStatusText(httpStatus.OK),
             {
-              message: 'Authentication successful', token, isJudge: user.toJSON().isJudge, isAdmin
+              message: 'Authentication successful', token, isJudge: user.toJSON().isJudge, isAdmin, isCLeader, isRLeader
             });
         } else {
           Utils.sendResponse(res, httpStatus.UNAUTHORIZED, httpStatus.getStatusText(

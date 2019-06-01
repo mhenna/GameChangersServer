@@ -15,10 +15,11 @@ oauth2Client.setCredentials({
 });
 
 const tokens = oauth2Client.refreshAccessToken((tokens) => {
-  if(tokens==null){
-console.log("credentials error")
-  }else{
-  accessToken = tokens.credentials.access_token;}
+  if (tokens == null) {
+    console.log('credentials error');
+  } else {
+    accessToken = tokens.credentials.access_token;
+  }
 });
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -35,6 +36,14 @@ const transporter = nodemailer.createTransport({
     refreshToken: '1/Rvg9xJuIPV9zlLLfmI19GrpvsoKnn-Y2ZV0AxaEy0oY',
     accessToken,
   }
+  // host: 'smtp.isus.emc.com',
+  // port: 25,
+  // secureConnection: false, // TLS requires secureConnection to be false
+  // secure: false,
+  // tls: {
+  //   ciphers: 'SSLv3',
+  //   rejectUnauthorized: false
+  // }
 });
 
 
@@ -47,29 +56,63 @@ function sendEmail(receiverEmail, Subject, Body) {
       text: Body
     };
 
-     //  transporter.sendMail(mailOptions, (error, info) => {
-       //  if (error) {
-         //  reject(error);
-         //} else {
-           //resolve(`Email sent: ${info.response}`);
-         //}
-       //});
-     //});
+    // transporter.sendMail(mailOptions, (error, info) => {
+    //   if (error) {
+    //     reject(error);
+    //   } else {
+    //     resolve(`Email sent: ${info.response}`);
+    //   }
+    // });
 
 
-     transporter.sendMail(mailOptions, (error, response) => {
-       if (error) {
-         console.log('error', error);
-       } else {
-         console.log('HEERREEE', response);
-         transporter.close();
-       }
-     });
+    transporter.sendMail(mailOptions, (error, response) => {
+      if (error) {
+        console.log('error', error);
+      } else {
+        console.log('HEERREEE', response);
+        transporter.close();
+      }
+    });
+  });
+}
+function sendNotification(receiverEmail, Subject, Body) {
+  console.log(receiverEmail, 'EMAILS');
+  let arr = [];
+  arr = receiverEmail;
+  return new Promise((resolve, reject) => {
+    receiverEmail.forEach((mail) => {
+      const mailOptions = {
+        from: 'gcnextgen7@gmail.com',
+        to: mail,
+        subject: Subject,
+        text: Body
+      };
+
+      //   transporter.sendMail(mailOptions, (error, info) => {
+      //     if (error) {
+      //       reject(error);
+      //     } else {
+      //       resolve(`Email sent: ${info.response}`);
+      //     }
+      //   });
+      // });
+
+
+      transporter.sendMail(mailOptions, (error, response) => {
+        if (error) {
+          console.log('error', error);
+        } else {
+          console.log('HEERREEE', response);
+          transporter.close();
+        }
+      });
+    });
   });
 }
 
 module.exports = {
- sendEmail
+  sendEmail,
+  sendNotification
 };
 // const nodemailer = require('nodemailer');
 

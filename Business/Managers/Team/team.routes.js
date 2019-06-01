@@ -11,6 +11,7 @@ import {
   _deleteTeamMember, _addTeamMember, _createTeam, _respondToInvitation, _joinTeam, _deleteTeam, _editTeam
 } from './Config/team.validations';
 import { validateMailDomain } from '../User/Config/user.middlewares';
+import { getAllTeamsC, getAllTeamsR } from '../Admin/AdminManager'
 
 const router = express.Router(); // eslint-disable-line new-cap
 
@@ -19,6 +20,13 @@ router.route('/join')
 
 router.route('/allTeams')
     .get(getAllTeams);
+
+    router.route('/region/:region')
+    .get(getAllTeamsR);
+
+    router.route('/chapter/:chapter')
+    .get(getAllTeamsC);
+
 router.route('/search/:email')
   .get(searchUsers);
 router.route('')

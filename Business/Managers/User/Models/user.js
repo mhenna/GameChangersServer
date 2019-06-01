@@ -40,6 +40,14 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  isRLeader: {
+    type: Boolean,
+    default: false
+  },
+  isCLeader: {
+    type: Boolean,
+    default: false
+  },
   isAdmin: {
     type: Boolean,
     default: false
