@@ -15,6 +15,8 @@ import Question from './Models/judgment-questions.model';
 import elasticsearch from '../../../Services/elasticsearch';
 import Region from './Models/region.model';
 import Chapter from './Models/chapter.model';
+import SendMail from '../../../Services/MailServer'
+
 
 const esClient = elasticsearch.esClient;
 
@@ -42,12 +44,56 @@ export async function getAllTeams(_, res) {
     ), null, [{ message: 'couldn\'t connect to the database' }]);
   }
 }
+export async function getAllTeamsR(req, res) {
+  try {
+    const teams = await Team.find({region: req.params.region}).populate('creator', 'email name');
+    Utils.sendResponse(res, httpStatus.OK, httpStatus.getStatusText(httpStatus.OK),
+      teams);
+  } catch (error) {
+    Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR, httpStatus.getStatusText(
+      httpStatus.INTERNAL_SERVER_ERROR
+    ), null, [{ message: 'couldn\'t connect to the database' }]);
+  }
+}
+export async function getAllTeamsC(req, res) {
+  try {
+    const teams = await Team.find({chapter: req.params.chapter}).populate('creator', 'email name');
+    Utils.sendResponse(res, httpStatus.OK, httpStatus.getStatusText(httpStatus.OK),
+      teams);
+  } catch (error) {
+    Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR, httpStatus.getStatusText(
+      httpStatus.INTERNAL_SERVER_ERROR
+    ), null, [{ message: 'couldn\'t connect to the database' }]);
+  }
+}
 
 export async function getAllDomains(req, res) {
   try {
     const domains = await Domain.find({});
     Utils.sendResponse(res, httpStatus.OK, httpStatus.getStatusText(httpStatus.OK),
       domains);
+  } catch (error) {
+    Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR, httpStatus.getStatusText(
+      httpStatus.INTERNAL_SERVER_ERROR
+    ), null, [{ message: 'couldn\'t connect to the database' }]);
+  }
+}
+export async function getAllUsersC(req, res) {
+  try {
+    const users = await User.find({chapter: req.params.chapter});
+    Utils.sendResponse(res, httpStatus.OK, httpStatus.getStatusText(httpStatus.OK),
+      users);
+  } catch (error) {
+    Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR, httpStatus.getStatusText(
+      httpStatus.INTERNAL_SERVER_ERROR
+    ), null, [{ message: 'couldn\'t connect to the database' }]);
+  }
+}
+export async function getAllUsersR(req, res) {
+  try {
+    const users = await User.find({region: req.params.region});
+    Utils.sendResponse(res, httpStatus.OK, httpStatus.getStatusText(httpStatus.OK),
+      users);
   } catch (error) {
     Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR, httpStatus.getStatusText(
       httpStatus.INTERNAL_SERVER_ERROR
@@ -647,11 +693,11 @@ export async function createJudge(req, res) {
         { $set: { isJudge: true } });
     } else {
       user = new User();
-      user.email = req.body.email;
+      user.email = req.body.email.toLowerCase();
       user.name = req.body.email;
-      user.location = 'JUDGE';
-      user.region = 'JUDGE';
-      user.password = password;
+      user.chapter = req.body.chapter;
+      user.region = req.body.region;
+      user.password = '123123';
       user.isJudge = true;
       user.position = 'Judge';
       user.previousParticipation = 'no';
@@ -662,11 +708,11 @@ export async function createJudge(req, res) {
         return;
       }
     }
-    const body = "Hi " + req.body.email + ",\nThank you for volunteering to judge the idea pitches for GameChangers 2019."+
-    "\nYou can log in to your account at http://ec2-54-153-49-90.us-west-1.compute.amazonaws.com with the following credentials:\nemail: " + req.body.email + "\npassword: " + password +
-    "\nFor more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell, or email us at DellGameChangers@dell.com."+
-    "\nWe appreciate your participation and partnership in encouraging innovation and team spirit at Dell,\nGameChangers 2019"
-     MailService.sendEmail(req.body.email, 'Welcome to GameChangers 2019!', body);
+    const body = `Hi ${req.body.email},\nThank you for volunteering to judge the idea pitches for GameChangers 2019.`
+    + `\nYou can log in to your account at http://ec2-54-153-49-90.us-west-1.compute.amazonaws.com with the following credentials:\nemail: ${req.body.email}\npassword: ${password
+    }\nFor more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell, or email us at DellGameChangers@dell.com.`
+    + '\nWe appreciate your participation and partnership in encouraging innovation and team spirit at Dell,\nGameChangers 2019';
+    MailService.sendEmail(req.body.email, 'Welcome to GameChangers 2019!', body);
 
     // const judgment = new Judgment({ judgeId: user._id, ideasID: [] });
     // const judgeSaved = await judgment.save();
@@ -780,6 +826,141 @@ export async function deleteChapter(req, res) {
     Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(
       httpStatus.BAD_REQUEST
     ), null, [{ message: error }]);
+  }
+}
+export async function newLeader(user, kind) {
+  console.log('63287g23urg92fgudegf92o3fgdwgf3qwgeogfw');
+
+  const token = await Utils.getRandomToken();
+
+  await User.findByIdAndUpdate({ _id: user._id },
+    { resetPasswordToken: token, resetPasswordExpires: Date.now() + 86400000 },
+    { upsert: true, new: true });
+  /**
+     * TODO send a mail to the user containing the token.
+     */
+  // const body = "Hi "+member.name +", \nWe are excited to let you know that "+ req.user.name +" has added you as a member of the GameChangers "+ req.body.teamName +
+  // " team. \nYou can log in to your account at http://ec2-54-153-49-90.us-west-1.compute.amazonaws.com with the following credentials:\nemail: " + member.email +
+  // "\npassword: password123 \nFor more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell.\nWe look forward to your participation.\nGameChangers 2019";
+  const body = `Hi ${user.name} ,
+        We are excited to let you know that you have been added you as a ${kind} leader  of the\n GameChangers .
+      Please follow this link to set a password and be able to login to your account
+      http://ec2-54-153-49-90.us-west-1.compute.amazonaws.com/#/reset-password/${token}
+      For more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell.
+      We look forward to your participation.
+      GameChangers 2019
+    Regards,
+      `;
+
+  // mailService.sendEmail(user.email, "Password reset", body)
+  //   .then(message => res.status(200).json({ message, token }))
+  //   .catch(error => res.status(500).json({ message: error }));
+  // if (process.env.ENVIRONMENT === 'testing') {
+  //   Utils.sendResponse(res, httpStatus.OK, httpStatus.getStatusText(httpStatus.OK),
+  //     token);
+  //   return;
+  // }
+
+  Mail.sendEmail(user.email, 'Welcome to GameChangers', body);
+}
+
+export async function inviteCLeader(req, res) {
+  try {
+    let user = await User.findOne({ email: req.body.email.toLowerCase() });
+    if (user) {
+      user = await User.findOneAndUpdate({ email: req.body.email.toLowerCase() },
+        { $set: { isCLeader: true, teamMember: '-1', isRLeader: false } });
+    } else {
+      user = new User();
+      user.email = req.body.email.toLowerCase();
+      user.name = req.body.name;
+      user.chapter = req.body.chapter;
+      user.region = req.body.region;
+      user.password = '123123';
+      user.isCLeader = true;
+      const usr = await user.save();
+      if (!usr) {
+        Utils.sendResponse(res, httpStatus.BAD_REQUEST,
+          httpStatus.getStatusText(httpStatus.BAD_REQUEST), null, [{ message: 'couldn\'t save Leader' }]);
+        return;
+      }
+      newLeader(user, 'Chapter');
+    }
+
+
+    Utils.sendResponse(res, httpStatus.OK,
+      httpStatus.getStatusText(httpStatus.OK), user._id);
+    return;
+  } catch (err) {
+    Utils.sendResponse(res, httpStatus.BAD_REQUEST,
+      httpStatus.getStatusText(httpStatus.BAD_REQUEST), null, [{ message: err.message }]);
+  }
+}
+export async function inviteRLeader(req, res) {
+  try {
+    let user = await User.findOne({ email: req.body.email.toLowerCase() });
+    if (user) {
+      user = await User.findOneAndUpdate({ email: req.body.email.toLowerCase() },
+        { $set: { isRLeader: true, teamMember: '-1',isCLeader: false } });
+    } else {
+      user = new User();
+      user.email = req.body.email.toLowerCase();
+      user.name = req.body.name;
+      user.chapter = req.body.chapter;
+      user.region = req.body.region;
+      user.password = '123123';
+      user.isRLeader = true;
+      const usr = await user.save();
+      if (!usr) {
+        Utils.sendResponse(res, httpStatus.BAD_REQUEST,
+          httpStatus.getStatusText(httpStatus.BAD_REQUEST), null, [{ message: 'couldn\'t save Leader' }]);
+        return;
+      }
+      newLeader(user, 'Region');
+    }
+
+
+    Utils.sendResponse(res, httpStatus.OK,
+      httpStatus.getStatusText(httpStatus.OK), user._id);
+    return;
+  } catch (err) {
+    Utils.sendResponse(res, httpStatus.BAD_REQUEST,
+      httpStatus.getStatusText(httpStatus.BAD_REQUEST), null, [{ message: err.message }]);
+  }
+}
+
+export async function emailRegion(req, res) {
+  try {
+    const emails = [];
+    const teams = await Team.find({ region: req.body.region }).populate('creator', 'email name');
+    teams.forEach((team) => {
+      emails.push(team.creator.email);
+    });
+    SendMail.sendNotification(emails, req.body.subject, req.body.emailBody);
+    Utils.sendResponse(res, httpStatus.OK,
+      httpStatus.getStatusText(httpStatus.OK), req.body.region);
+    return;
+  } catch (error) {
+    console.log(error);
+    Utils.sendResponse(res, httpStatus.BAD_REQUEST,
+      httpStatus.getStatusText(httpStatus.BAD_REQUEST), null, [{ message: error }]);
+  }
+}
+export async function emailChapter(req, res) {
+  try {
+    const emails = [];
+    const teams = await Team.find({ chapter: req.body.chapter }).populate('creator', 'email name');
+    teams.forEach((team) => {
+      emails.push(team.creator.email);
+    });
+    SendMail.sendNotification(emails, req.body.subject, req.body.emailBody);
+    Utils.sendResponse(res, httpStatus.OK,
+      httpStatus.getStatusText(httpStatus.OK), req.body.region);
+    return;
+  } catch (error) {
+    console.log(error);
+    Utils.sendResponse(res, httpStatus.BAD_REQUEST,
+      httpStatus.getStatusText(httpStatus.BAD_REQUEST), null, [{ message: error }]);
   }
 }
 // export async function makeAuserAJudge(req, res) {

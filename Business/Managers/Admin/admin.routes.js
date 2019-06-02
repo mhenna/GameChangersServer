@@ -5,7 +5,7 @@ import {
   addTeamMember, deleteTeamMember, getAllDomains, createDomain, removeDomain, updateDomain,
   createChallenge, removeChallenge, updateChallenge, getAllDeadlines, createDeadline,
   updateDeadline, getMail, updateMail, getAllJudges, isJudge, getJudge, createJudge,
-  saveQuestions, addRegion, addChapter, deleteChapter
+  saveQuestions, addRegion, addChapter, deleteChapter, inviteCLeader, inviteRLeader
 } from './AdminManager';
 import {
   createDomain as _createDomain, removeDomain as _removeDomain, updateDomain as _updateDomain,
@@ -30,6 +30,13 @@ router.route('/users')
 
 router.route('/stats')
   .get(getStats);
+
+
+router.route('/inviteCLeader')
+  .post(inviteCLeader);
+
+router.route('/inviteRLeader')
+  .post(inviteRLeader);
 
 
 router.route('/user/viewIdea/download')

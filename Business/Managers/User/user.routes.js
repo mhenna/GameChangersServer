@@ -3,7 +3,9 @@ import express from 'express';
 import validate from 'express-validation';
 import config from '../../../config/config';
 import { isRegistrationDeadlineReached, validateMailDomain, validateLocation } from './Config/user.middlewares';
-import { getAllDeadlines, getChapters, getRegions } from '../Admin/AdminManager';
+import {
+  getAllDeadlines, getChapters, getRegions, getAllUsersC, getAllUsersR, emailChapter, emailRegion
+} from '../Admin/AdminManager';
 import {
 
   _login, _register, _forgotPassword, _resetPassword
@@ -34,6 +36,14 @@ router.route('/signup')
     validateMailDomain, validateLocation, registerUser);
 router.route('/register')
   .post(registerUser);
+
+
+router.route('/email/chapter')
+  .post(emailChapter);
+  
+router.route('/email/region')
+  .post(emailRegion);  
+
 router.route('/deadlines')
   .get(getAllDeadlines);
 
@@ -41,9 +51,15 @@ router.route('/deadlines')
 router.route('/regions')
   .get(getRegions);
 
+router.route('/region/:region')
+  .get(getAllUsersR);
+
 router.route('/chapters')
   .get(getChapters);
-  
+
+router.route('/chapter/:chapter')
+  .get(getAllUsersC);
+
 /** GET /users/user - Get the current user object */
 router.route('/user')
   .get(expressJwt({ secret: config.jwtSecret }), getUser);
@@ -78,7 +94,6 @@ router.route('/:id')
 
 router.route('/leave-team')
   .post(expressJwt({ secret: config.jwtSecret }), leaveTeam);
-
 
 
 export default router;
