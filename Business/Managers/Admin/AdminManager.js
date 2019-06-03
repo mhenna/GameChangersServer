@@ -712,7 +712,7 @@ export async function createJudge(req, res) {
     + `\nYou can log in to your account at http://ec2-54-153-49-90.us-west-1.compute.amazonaws.com with the following credentials:\nemail: ${req.body.email}\npassword: ${password
     }\nFor more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell, or email us at DellGameChangers@dell.com.`
     + '\nWe appreciate your participation and partnership in encouraging innovation and team spirit at Dell,\nGameChangers 2019';
-    MailService.sendEmail(req.body.email, 'Welcome to GameChangers 2019!', body);
+    SendMail.sendEmail(req.body.email, 'Welcome to GameChangers 2019!', body);
 
     // const judgment = new Judgment({ judgeId: user._id, ideasID: [] });
     // const judgeSaved = await judgment.save();
@@ -843,7 +843,7 @@ export async function newLeader(user, kind) {
   // " team. \nYou can log in to your account at http://ec2-54-153-49-90.us-west-1.compute.amazonaws.com with the following credentials:\nemail: " + member.email +
   // "\npassword: password123 \nFor more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell.\nWe look forward to your participation.\nGameChangers 2019";
   const body = `Hi ${user.name} ,
-        We are excited to let you know that you have been added you as a ${kind} leader  of the\n GameChangers .
+        We are excited to let you know that you have been added you as a ${kind} leader  of the\n GameChangers 2019.
       Please follow this link to set a password and be able to login to your account
       http://ec2-54-153-49-90.us-west-1.compute.amazonaws.com/#/reset-password/${token}
       For more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell.
@@ -861,7 +861,7 @@ export async function newLeader(user, kind) {
   //   return;
   // }
 
-  Mail.sendEmail(user.email, 'Welcome to GameChangers', body);
+  SendMail.sendEmail(user.email, 'Welcome to GameChangers', body);
 }
 
 export async function inviteCLeader(req, res) {
@@ -870,6 +870,16 @@ export async function inviteCLeader(req, res) {
     if (user) {
       user = await User.findOneAndUpdate({ email: req.body.email.toLowerCase() },
         { $set: { isCLeader: true, teamMember: '-1', isRLeader: false } });
+      const body = `Hi ${user.name} ,
+      We are excited to let you know that you have been added you as a chapter leader of the GameChangers 2019.
+    Please follow this link to login to your account
+    http://ec2-54-153-49-90.us-west-1.compute.amazonaws.com/
+    For more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell.
+    We look forward to your participation.
+    GameChangers 2019
+    Regards,
+    `;
+      SendMail.sendEmail(user.email, 'Welcome to GameChangers', body)
     } else {
       user = new User();
       user.email = req.body.email.toLowerCase();
@@ -902,6 +912,16 @@ export async function inviteRLeader(req, res) {
     if (user) {
       user = await User.findOneAndUpdate({ email: req.body.email.toLowerCase() },
         { $set: { isRLeader: true, teamMember: '-1',isCLeader: false } });
+      const body = `Hi ${user.name} ,
+      We are excited to let you know that you have been added you as a region leader of the GameChangers 2019.
+    Please follow this link to login to your account
+    http://ec2-54-153-49-90.us-west-1.compute.amazonaws.com/
+    For more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell.
+    We look forward to your participation.
+    GameChangers 2019
+    Regards,
+    `;
+      SendMail.sendEmail(user.email, 'Welcome to GameChangers', body)
     } else {
       user = new User();
       user.email = req.body.email.toLowerCase();
