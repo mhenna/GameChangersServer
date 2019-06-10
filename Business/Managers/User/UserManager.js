@@ -127,7 +127,7 @@ export async function forgotPassword(req, res) {
 
           let body = `Dear ${user.name} ,
             Please follow this link to reset your password
-        ${config.frontEndUrl}/#/reset-password/${token}
+        http://ec2-54-153-49-90.us-west-1.compute.amazonaws.com/#/reset-password/${token}
         Regards,
           `;
 
