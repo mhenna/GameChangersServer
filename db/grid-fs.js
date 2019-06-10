@@ -8,6 +8,9 @@ const connection = mongoose.connection;
 const Utils = require('../Business/Managers/utils');
 const mime = require('mime-types');
 let part = '';
+let found_idea = ''
+
+
 function write(req, res) {
   const gfs = gridfs(connection.db);
   if (req.files == null || req.files == undefined){
@@ -16,24 +19,43 @@ function write(req, res) {
   }else{
     part = req.files.file;
   }
+  var fileKeys = Object.keys(req.files);
+  var i=0;
+  var to=0;
+  let data = '';
+  if(req.files.file.length == undefined){
+    data=req.files.file;
+    
+    to=1;
+  }
+  else{
+    part=req.files.file;
+    to=part.length;
+  }
+ 
+ 
+  for(let i =0; i < to;i++ )
+  { 
+    if(req.files.file.length != undefined){
+      data= part[i];
+    }
 
   const writeStream = gfs.createWriteStream({
-    filename: req.user.teamMember + req.body.extension,
+    filename: req.user.teamMember + '-file-' + i +'.'+ mime.extension(data.mimetype) ,
     mode: 'w',
-    content_type: mime.lookup(req.body.extension),
+    content_type: data.mimetype,
     metadata: {
-      encoding: part.encoding
+      encoding: data.encoding
     },
   });
-
-
+ 
   writeStream
     .on('close', () => {
       const team = req.user.teamMember;
       const idea = new Idea({ title: req.body.title, teamName: team });
       try {
         Idea.update({ teamName: team }, {
-          filename: req.user.teamMember + req.body.extension,
+          filename: req.user.teamMember +'.'+ mime.extension(data.mimetype),
           description: req.body.description,
           oldFilename: req.body.oldFilename,
           title: req.body.title,
@@ -44,11 +66,6 @@ function write(req, res) {
             Utils.send400('Cannot perform operation.', res);
             return;
           }
-          res.status(200).json({
-            status: '200',
-            statustext: 'Ok',
-            idea: doc
-          });
         });
       } catch (err) {
         return Utils.sendResponse(res, httpStatus.BAD_REQUEST,
@@ -58,31 +75,80 @@ function write(req, res) {
     })
     .on('error', (err) => {
       Utils.send400(err, res);
+      return;
     });
+    
+  try {
 
-  writeStream.write(part.data);
-  writeStream.end();
+    writeStream.write(data.data);
+   
+    writeStream.end();
+   
+  } catch (err) {
+    
+    Utils.send400('Error in write stream.', res);
+    return;
+  }
+  console.log('File ',i+1 ,' uploded')
+}
+  
+  console.log('before ressssssssssssss')
+  res.status(200).json({
+    status: '200',
+    statustext: 'Ok'
+  });
+  console.log('after resssssssssssssssssssss')
 }
 
 
-function read(req, res) {
+async function read(req, res) {
+  console.log('Start READ')
   const gfs = gridfs(connection.db);
-  gfs.exist({ filename: req.body.file }, (err, found) => {
+  const idea = await getIdea(req)
+  
+  if(idea == undefined)
+    return
+  let filenames = idea.oldFilename.split(',')
+  let i = filenames.indexOf(req.body.file)
+  
+  let name = req.user.teamMember + '-file-' + i +'.'+ mime.extension(mime.lookup(req.body.file))
+  //console.log(name)
+  
+  gfs.exist({ filename: name }, (err, found) => {
     if (err) {
       Utils.send400(err, res);
     } else if (!found) {
       Utils.send400('file not found', res);
     } else {
       res.header('Content-Type', mime.lookup(req.body.file));
-      // res.setContentType(mime.lookup(req.body.file));
       gfs.createReadStream({
-        filename: req.body.file
+        filename: name
       }).pipe(res)
         .on('error', (err) => {
           Utils.send400(err, res);
         });
     }
   });
+}
+
+async function getIdea(req, res) {
+  try {
+    found_idea = await Idea.findOne({ teamName: req.user.teamMember}, (err, ret) => {
+      if (err) {
+        Utils.send400('Error finding the idea', res);
+        return 'No idea'
+      }
+      if(!ret){
+        Utils.send400('Error finding the idea', res);
+        return 'No idea'
+      }
+      console.log('End of get idea')
+    })
+  } catch (err) {
+    return Utils.sendResponse(res, httpStatus.BAD_REQUEST, httpStatus.getStatusText(httpStatus.BAD_REQUEST),
+      null, [{ message: 'couldn\'t fetch corresponding team to create the idea' }]);
+  }
+  return found_idea;
 }
 
 function remove(req, res) {
