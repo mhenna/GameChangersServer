@@ -23,7 +23,8 @@ const userSchema = new mongoose.Schema({
   },
   chapter: {
     type: String,
-    required: true
+    required: true,
+    default: '-1'
   },
   // this attributes shows if the user belongs to a team or not
   teamMember: {
