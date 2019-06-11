@@ -31,24 +31,30 @@ function write(req, res) {
     .on('close', () => {
       const team = req.user.teamMember;
       const idea = new Idea({ title: req.body.title, teamName: team });
-      Idea.update({ teamName: team }, {
-        filename: req.user.teamMember + req.body.extension,
-        description: req.body.description,
-        oldFilename: req.body.oldFilename,
-        title: req.body.title,
-        category: req.body.challenge,
-        teamName: team
-      }, { new: true, upsert: true }, (err, doc) => {
-        if (err) {
-          Utils.send400('Cannot perform operation.', res);
-          return;
-        }
-        res.status(200).json({
-          status: '200',
-          statustext: 'Ok',
-          idea: doc
+      try {
+        Idea.update({ teamName: team }, {
+          filename: req.user.teamMember + req.body.extension,
+          description: req.body.description,
+          oldFilename: req.body.oldFilename,
+          title: req.body.title,
+          category: req.body.challenge,
+          teamName: team
+        }, { new: true, upsert: true }, (err, doc) => {
+          if (err) {
+            Utils.send400('Cannot perform operation.', res);
+            return;
+          }
+          res.status(200).json({
+            status: '200',
+            statustext: 'Ok',
+            idea: doc
+          });
         });
-      });
+      } catch (err) {
+        return Utils.sendResponse(res, httpStatus.BAD_REQUEST,
+          httpStatus.getStatusText(httpStatus.BAD_REQUEST), null, 
+          [{message: 'cannot perform update of idea'}]);
+      }
     })
     .on('error', (err) => {
       Utils.send400(err, res);

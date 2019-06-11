@@ -22,8 +22,8 @@ export async function registerUser(req, res) {
         return;
       }
       Mail.sendEmail(req.body.email, 'Welcome to GameChangers 2019!',
-      "Hi "+ req.body.name +",\nWelcome to GameChangers 2019!\n You can log in to your account at http://ec2-54-153-49-90.us-west-1.compute.amazonaws.com with the following credentials: \nemail:"
-      + req.body.email +"\npassword:" + req.body.password + "\nFor more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell. \nWe look forward to your participation.\nGameChangers 2019");
+      "Hi "+ req.body.name +",\nWelcome to GameChangers 2019!\n You can log in to your account at http://ec2-54-153-49-90.us-west-1.compute.amazonaws.com with the following your credentials"
+      + "\nFor more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell. \nWe look forward to your participation.\nGameChangers 2019");
       const token = jwt.sign(user.toJSON(), config.jwtSecret);
       Utils.sendResponse(res, httpStatus.OK,
         httpStatus.getStatusText(httpStatus.OK),
@@ -69,9 +69,11 @@ export async function loginUser(req, res) {
         if (isMatch) {
           const token = jwt.sign(user.toJSON(), config.jwtSecret);
           const isAdmin = !!user.toJSON().isAdmin;
+          const isCLeader = user.toJSON().isCLeader;
+          const isRLeader = user.toJSON().isRLeader;
           Utils.sendResponse(res, httpStatus.OK, httpStatus.getStatusText(httpStatus.OK),
             {
-              message: 'Authentication successful', token, isJudge: user.toJSON().isJudge, isAdmin
+              message: 'Authentication successful', token, isJudge: user.toJSON().isJudge, isAdmin, isCLeader, isRLeader
             });
         } else {
           Utils.sendResponse(res, httpStatus.UNAUTHORIZED, httpStatus.getStatusText(
@@ -125,7 +127,7 @@ export async function forgotPassword(req, res) {
 
           let body = `Dear ${user.name} ,
             Please follow this link to reset your password
-        ${config.frontEndUrl}/#/reset-password/${token}
+        http://ec2-54-153-49-90.us-west-1.compute.amazonaws.com/#/reset-password/${token}
         Regards,
           `;
 
