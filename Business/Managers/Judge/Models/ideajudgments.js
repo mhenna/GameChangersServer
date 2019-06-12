@@ -16,7 +16,7 @@ const ideajudgmentsSchema = new mongoose.Schema({
   },
   questions: {
     type: mongoose.Schema.Types.Array,
-    required: true
+    // required: true
   },
   totalScore: {
     type: mongoose.Schema.Types.Number,

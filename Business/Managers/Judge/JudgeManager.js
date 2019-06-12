@@ -148,11 +148,24 @@ async function assignIdeatoJudge(req, res) {
       idea.score = ideaScore / idea.judgments.length;
       try {
         await idea.save();
+        
+        try {
+          const ideajudgment = new IdeaJudgment()
+          ideajudgment.teamName = idea.teamName
+          ideajudgment.idea = idea._id
+          ideajudgment.judge = req.body.judgeId
 
+          await ideajudgment.save()
+        } catch (err) {
+          Utils.sendResponse(res, HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.getStatusText(HttpStatus.INTERNAL_SERVER_ERROR), null, [{ message: 'Error assigning judge to idea.' }]);
+          return;
+        }
         Utils.sendResponse(res, HttpStatus.OK,
           HttpStatus.getStatusText(HttpStatus.OK), { idea }, [{ message: 'judge added' }]);
         return;
       } catch (err) {
+        console.log("IDEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", idea)
+        console.log("ERRORRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR", err)
         Utils.sendResponse(res, HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.getStatusText(HttpStatus.INTERNAL_SERVER_ERROR), null, [{ message: 'Error saving idea.' }]);
         return;
       }

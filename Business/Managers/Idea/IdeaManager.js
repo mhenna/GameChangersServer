@@ -213,10 +213,8 @@ function getAllIdeas(req, res) {
                     val.location = user.location;
                     list.push(val);                
                   }
-                  if (user == null) {
+                  if (user === null)
                     index++
-                    //
-                  }
                   console.log("##########",index, idea.length)
                   if (index == idea.length) {
                     return res.status(200).json({
@@ -224,6 +222,15 @@ function getAllIdeas(req, res) {
                       message: 'Success',
                       body: list
                     });
+                  }
+                  else {
+                    console.log()
+                    console.log()
+                    console.log()
+                    console.log()
+                    console.log()
+                    console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
+                    console.log(index, idea.length)
                   }
                 });
               } catch (err) {
