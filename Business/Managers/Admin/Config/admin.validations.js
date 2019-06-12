@@ -83,6 +83,13 @@ export const updateMail = {
     password: Joi.string().required(),
   }
 };
+export const sendEmails = {
+  body:{
+    emails: Joi.array().items(Joi.string()).required(),
+    subject: Joi.string().required(),
+    emailBody: Joi.string().required()
+  }
+}
 export const saveQuestions = {
   body: {
     questions: Joi.array().items(Joi.object({

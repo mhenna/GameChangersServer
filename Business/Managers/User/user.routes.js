@@ -4,7 +4,7 @@ import validate from 'express-validation';
 import config from '../../../config/config';
 import { isRegistrationDeadlineReached, validateMailDomain, validateLocation } from './Config/user.middlewares';
 import {
-  getAllDeadlines, getChapters, getRegions, getAllUsersC, getAllUsersR, emailChapter, emailRegion
+  getAllDeadlines, getChapters, getRegions, getAllUsersC, getAllUsersR, emailChapter, emailRegion, sendEmails, getAllUsers
 } from '../Admin/AdminManager';
 import {
 
@@ -42,7 +42,10 @@ router.route('/email/chapter')
   .post(emailChapter);
   
 router.route('/email/region')
-  .post(emailRegion);  
+  .post(emailRegion); 
+  
+router.route('/email/global')
+  .post(sendEmails); 
 
 router.route('/deadlines')
   .get(getAllDeadlines);
@@ -60,6 +63,8 @@ router.route('/chapters')
 router.route('/chapter/:chapter')
   .get(getAllUsersC);
 
+router.route('/allusers')
+  .get(getAllUsers);
 /** GET /users/user - Get the current user object */
 router.route('/user')
   .get(expressJwt({ secret: config.jwtSecret }), getUser);

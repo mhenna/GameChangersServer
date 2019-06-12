@@ -71,9 +71,10 @@ export async function loginUser(req, res) {
           const isAdmin = !!user.toJSON().isAdmin;
           const isCLeader = user.toJSON().isCLeader;
           const isRLeader = user.toJSON().isRLeader;
+          const isGLeader = user.toJSON().isGLeader;
           Utils.sendResponse(res, httpStatus.OK, httpStatus.getStatusText(httpStatus.OK),
             {
-              message: 'Authentication successful', token, isJudge: user.toJSON().isJudge, isAdmin, isCLeader, isRLeader
+              message: 'Authentication successful', token, isJudge: user.toJSON().isJudge, isAdmin, isCLeader, isRLeader, isGLeader
             });
         } else {
           Utils.sendResponse(res, httpStatus.UNAUTHORIZED, httpStatus.getStatusText(
