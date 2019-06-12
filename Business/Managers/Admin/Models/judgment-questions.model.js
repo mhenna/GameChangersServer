@@ -4,7 +4,7 @@ import beautifyUnique from 'mongoose-beautiful-unique-validation';
 const judgmentQuestionsSchema = new mongoose.Schema({
   category: {
     type: String,
-    required: true,
+    //required: true,
     unique: false
   },
   question: {

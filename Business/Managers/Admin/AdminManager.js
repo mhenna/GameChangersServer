@@ -652,6 +652,7 @@ export async function searchUsers(req, res) {
 }
 export async function saveQuestions(req, res) {
   const questions = req.body.questions;
+  console.log('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$', questions)
   try {
     await Question.deleteMany();
     questions.forEach((question) => {

@@ -47,6 +47,7 @@ async function getIdea(req, res) {
       teamName: req.params.teamName,
       judge: req.user._id
     });
+    console.log(ideajudgment, '########################')
     if (!ideajudgment) {
       return Utils.sendResponse(res, HttpStatus.NOT_FOUND, HttpStatus.getStatusText(HttpStatus.NOT_FOUND), null, [{ message: 'IdeaJudgment not found.' }]);
     }
@@ -62,6 +63,23 @@ async function getIdea(req, res) {
   }
 }
 
+async function getTeamIdea(req, res) {
+  try {
+    const idea = await Idea.findOne({teamName: req.params.teamName})
+
+    if (!idea) {
+      return Utils.sendResponse(res, HttpStatus.NOT_FOUND, HttpStatus.getStatusText(HttpStatus.NOT_FOUND), null, [{ message: 'No idea exists for the specified team'}])
+    }
+
+    return res.status(200).json({
+      status: '200',
+      statustext: 'Ok',
+      body: idea
+    })
+  } catch (error) {
+    return res.json({state: 'error'})
+  }
+}
 
 async function submitJudgment(req, res) {
   const questions = req.body.questions;
@@ -95,11 +113,14 @@ async function submitJudgment(req, res) {
         score
       });
       let ideaScore = 0;
+      let numOfJudgments = 0
       judgments.forEach((judgment) => {
         ideaScore += judgment.score !== -1 ? judgment.score : 0;
+        if (judgment.score !== -1)
+          numOfJudgments += 1
       });
       idea.judgments = judgments;
-      idea.score = ideaScore / judgments.length;
+      idea.score = ideaScore / numOfJudgments;
       try {
         await idea.save();
 
@@ -194,4 +215,5 @@ module.exports = {
   getIdea,
   assignIdeatoJudge,
   getQuestions,
+  getTeamIdea
 };

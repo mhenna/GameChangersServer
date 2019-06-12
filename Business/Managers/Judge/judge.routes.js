@@ -30,4 +30,6 @@ router.route('/assign-judge')
 router.route('/get-questions')
   .get(JudgeManager.getQuestions);
 
+router.route('/getTeamIdea/:teamName')
+  .get(JudgeManager.getTeamIdea)
 module.exports = router;
