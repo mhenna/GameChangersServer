@@ -213,6 +213,10 @@ function getAllIdeas(req, res) {
                     val.location = user.location;
                     list.push(val);                
                   }
+                  if (user == null) {
+                    index++
+                    //
+                  }
                   console.log("##########",index, idea.length)
                   if (index == idea.length) {
                     return res.status(200).json({
