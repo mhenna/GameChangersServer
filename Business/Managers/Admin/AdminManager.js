@@ -692,16 +692,21 @@ export async function createJudge(req, res) {
       user = await User.findOneAndUpdate({ email: req.body.email.toLowerCase() },
         { $set: { isJudge: true } });
     } else {
+      // {"name":"aq","email":"q@emc.com","password":"123123","passConf":"123123","region":"EMEA","chapter":"Chapter1"}
       user = new User();
       user.email = req.body.email.toLowerCase();
       user.name = req.body.email;
-      user.chapter = req.body.chapter;
-      user.region = req.body.region;
+      // user.chapter = 'Chapter1';
+      // user.region = "EMEA";
       user.password = '123123';
       user.isJudge = true;
-      user.position = 'Judge';
-      user.previousParticipation = 'no';
       const usr = await user.save();
+      console.log()
+      console.log()
+      console.log()
+      console.log()
+      console.log()
+      console.log(usr)
       if (!usr) {
         Utils.sendResponse(res, httpStatus.BAD_REQUEST,
           httpStatus.getStatusText(httpStatus.BAD_REQUEST), null, [{ message: 'couldn\'t save judge' }]);

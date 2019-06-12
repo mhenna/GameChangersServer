@@ -153,6 +153,8 @@ async function assignIdeatoJudge(req, res) {
           HttpStatus.getStatusText(HttpStatus.OK), { idea }, [{ message: 'judge added' }]);
         return;
       } catch (err) {
+        console.log("IDEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", idea)
+        console.log("ERRORRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR", err)
         Utils.sendResponse(res, HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.getStatusText(HttpStatus.INTERNAL_SERVER_ERROR), null, [{ message: 'Error saving idea.' }]);
         return;
       }
