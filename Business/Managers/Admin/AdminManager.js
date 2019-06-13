@@ -703,6 +703,11 @@ export async function createJudge(req, res) {
       else {
         user = await User.findOneAndUpdate({ email: req.body.email.toLowerCase() },
           { $set: { isJudge: true } });
+
+        const body = `Hi ${req.body.email},\nThank you for volunteering to judge the idea pitches for GameChangers 2019.`
+          +`\nFor more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell, or email us at DellGameChangers@dell.com.`
+          + '\nWe appreciate your participation and partnership in encouraging innovation and team spirit at Dell,\nGameChangers 2019';
+        SendMail.sendEmail(req.body.email, 'Welcome to GameChangers 2019!', body);
       }
     } else {
       // {"name":"aq","email":"q@emc.com","password":"123123","passConf":"123123","region":"EMEA","chapter":"Chapter1"}
@@ -725,18 +730,18 @@ export async function createJudge(req, res) {
           httpStatus.getStatusText(httpStatus.BAD_REQUEST), null, [{ message: 'couldn\'t save judge' }]);
         return;
       }
-    }
-    const token = await Utils.getRandomToken();
+      const token = await Utils.getRandomToken();
 
-    await User.findByIdAndUpdate({ _id: user._id },
-      { resetPasswordToken: token, resetPasswordExpires: Date.now() + 86400000 },
-      { upsert: true, new: true });
+      await User.findByIdAndUpdate({ _id: user._id },
+        { resetPasswordToken: token, resetPasswordExpires: Date.now() + 86400000 },
+        { upsert: true, new: true });
       // http://ec2-54-153-49-90.us-west-1.compute.amazonaws.com
-    const body = `Hi ${req.body.email},\nThank you for volunteering to judge the idea pitches for GameChangers 2019.`
-      + `\nYou can create a password for your account by clicking on the following link: http://localhost:4200/#/reset-password/${token} 
-      \nFor more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell, or email us at DellGameChangers@dell.com.`
-      + '\nWe appreciate your participation and partnership in encouraging innovation and team spirit at Dell,\nGameChangers 2019';
-    SendMail.sendEmail(req.body.email, 'Welcome to GameChangers 2019!', body);
+      const body = `Hi ${req.body.email},\nThank you for volunteering to judge the idea pitches for GameChangers 2019.`
+        + `\nYou can create a password for your account by clicking on the following link: http://ec2-54-153-49-90.us-west-1.compute.amazonaws.com/#/reset-password/${token} 
+        \nFor more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell, or email us at DellGameChangers@dell.com.`
+        + '\nWe appreciate your participation and partnership in encouraging innovation and team spirit at Dell,\nGameChangers 2019';
+      SendMail.sendEmail(req.body.email, 'Welcome to GameChangers 2019!', body);
+    }
 
     // const judgment = new Judgment({ judgeId: user._id, ideasID: [] });
     // const judgeSaved = await judgment.save();
@@ -972,7 +977,7 @@ export async function inviteRLeader(req, res) {
       httpStatus.getStatusText(httpStatus.BAD_REQUEST), null, [{ message: err.message }]);
   }
 }
-export async function inviteGLeader (req,res) {
+export async function inviteGLeader(req, res) {
   try {
     let user = await User.findOne({ email: req.body.email.toLowerCase() });
     if (user) {
