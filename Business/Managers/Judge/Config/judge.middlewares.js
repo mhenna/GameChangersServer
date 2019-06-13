@@ -7,6 +7,14 @@ function isJudge(req, res, next) {
     }
 }
 
+function isJudgeOrAdmin(req, res, next) {
+    if((req.user.isJudge == true) || req.user.isAdmin == true)
+        next()
+    else
+        return res.json({ message: "unauthorized" }, 401)
+}
+
 module.exports = {
-    isJudge
+    isJudge,
+    isJudgeOrAdmin
 };
