@@ -4,7 +4,7 @@ import validate from 'express-validation';
 import config from '../../../config/config';
 import { isRegistrationDeadlineReached, validateMailDomain, validateLocation } from './Config/user.middlewares';
 import {
-  getAllDeadlines, getChapters, getRegions, getAllUsersC, getAllUsersR, emailChapter, emailRegion, sendEmails, getAllUsers
+  getAllDeadlines, getChapters, getRegions, getAllUsersC, getAllUsersR, emailChapter, emailRegion, sendEmails, getAllUsers, createJudge
 } from '../Admin/AdminManager';
 import {
 
@@ -100,5 +100,7 @@ router.route('/:id')
 router.route('/leave-team')
   .post(expressJwt({ secret: config.jwtSecret }), leaveTeam);
 
+router.route('/createNewjudge')
+  .post(createJudge);
 
 export default router;
