@@ -690,8 +690,20 @@ export async function createJudge(req, res) {
   try {
     let user = await User.findOne({ email: req.body.email.toLowerCase() });
     if (user) {
-      user = await User.findOneAndUpdate({ email: req.body.email.toLowerCase() },
-        { $set: { isJudge: true } });
+      if (user.isJudge || user.isAdmin || user.isCLeader || user.isRLeader || user.isGLeader) {
+        Utils.sendResponse(res, httpStatus.BAD_REQUEST,
+          httpStatus.getStatusText(httpStatus.BAD_REQUEST), null, [{ message: 'Judge cannot be a leader or admin' }]);
+        return;
+      }
+      else if (user.teamMember != -1 || user.creatorOf != -1) {
+        Utils.sendResponse(res, httpStatus.BAD_REQUEST,
+          httpStatus.getStatusText(httpStatus.BAD_REQUEST), null, [{ message: 'Judge cannot be in a team or a creator of a team' }]);
+        return;
+      }
+      else {
+        user = await User.findOneAndUpdate({ email: req.body.email.toLowerCase() },
+          { $set: { isJudge: true } });
+      }
     } else {
       // {"name":"aq","email":"q@emc.com","password":"123123","passConf":"123123","region":"EMEA","chapter":"Chapter1"}
       user = new User();
