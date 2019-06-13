@@ -5,7 +5,7 @@ import {
   addTeamMember, deleteTeamMember, getAllDomains, createDomain, removeDomain, updateDomain,
   createChallenge, removeChallenge, updateChallenge, getAllDeadlines, createDeadline,
   updateDeadline, getMail, updateMail, getAllJudges, isJudge, getJudge, createJudge,
-  saveQuestions, addRegion, addChapter, deleteChapter, inviteCLeader, inviteRLeader
+  saveQuestions, addRegion, addChapter, deleteChapter, inviteCLeader, inviteRLeader, inviteGLeader, sendEmails
 } from './AdminManager';
 import {
   createDomain as _createDomain, removeDomain as _removeDomain, updateDomain as _updateDomain,
@@ -13,7 +13,7 @@ import {
   updateChallenge as _updateChallenge, createDeadline as _createDeadline,
   updateDeadline as _updateDeadline, addTeamMember as _addTeamMember,
   deleteTeamMember as _deleteTeamMember, saveQuestions as _saveQuestions,
-  updateMail as _updateMail, createJudge as _createJudge
+  updateMail as _updateMail, createJudge as _createJudge, sendEmails as _sendEmails
 } from './Config/admin.validations';
 
 import { getAllIdeas } from '../Idea/IdeaManager';
@@ -37,7 +37,8 @@ router.route('/inviteCLeader')
 
 router.route('/inviteRLeader')
   .post(inviteRLeader);
-
+router.route('/inviteGleader')
+  .post(inviteGLeader);
 
 router.route('/user/viewIdea/download')
   .post(download);
@@ -85,6 +86,9 @@ router.route('/deadlines')
 router.route('/mail')
   .get(getMail)
   .put(validate(_updateMail), updateMail);
+router.route('/email/global')
+  .post(validate(_sendEmails), sendEmails)
+
 router.route('/judges/:judgeId')
   .get(getJudge);
 router.route('/createNewJudge')

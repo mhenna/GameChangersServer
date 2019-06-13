@@ -23,7 +23,7 @@ const esClient = elasticsearch.esClient;
 
 export async function getAllUsers(_, res) {
   try {
-    const users = await User.find({}, 'name email region location position');
+    const users = await User.find({}, 'name email region chapter teamMember');
     Utils.sendResponse(res, httpStatus.OK, httpStatus.getStatusText(httpStatus.OK),
       users);
   } catch (error) {
@@ -46,7 +46,7 @@ export async function getAllTeams(_, res) {
 }
 export async function getAllTeamsR(req, res) {
   try {
-    const teams = await Team.find({region: req.params.region}).populate('creator', 'email name');
+    const teams = await Team.find({ region: req.params.region }).populate('creator', 'email name');
     Utils.sendResponse(res, httpStatus.OK, httpStatus.getStatusText(httpStatus.OK),
       teams);
   } catch (error) {
@@ -57,7 +57,7 @@ export async function getAllTeamsR(req, res) {
 }
 export async function getAllTeamsC(req, res) {
   try {
-    const teams = await Team.find({chapter: req.params.chapter}).populate('creator', 'email name');
+    const teams = await Team.find({ chapter: req.params.chapter }).populate('creator', 'email name');
     Utils.sendResponse(res, httpStatus.OK, httpStatus.getStatusText(httpStatus.OK),
       teams);
   } catch (error) {
@@ -80,7 +80,7 @@ export async function getAllDomains(req, res) {
 }
 export async function getAllUsersC(req, res) {
   try {
-    const users = await User.find({chapter: req.params.chapter});
+    const users = await User.find({ chapter: req.params.chapter });
     Utils.sendResponse(res, httpStatus.OK, httpStatus.getStatusText(httpStatus.OK),
       users);
   } catch (error) {
@@ -91,7 +91,7 @@ export async function getAllUsersC(req, res) {
 }
 export async function getAllUsersR(req, res) {
   try {
-    const users = await User.find({region: req.params.region});
+    const users = await User.find({ region: req.params.region });
     Utils.sendResponse(res, httpStatus.OK, httpStatus.getStatusText(httpStatus.OK),
       users);
   } catch (error) {
@@ -139,10 +139,10 @@ export async function updateDomain(req, res) {
     const domain = await Domain.findOneAndUpdate({
       name: req.params.name
     }, {
-      name: req.body.name
-    }, {
-      new: true
-    });
+        name: req.body.name
+      }, {
+        new: true
+      });
     if (domain) {
       Utils.sendResponse(res, httpStatus.OK,
         httpStatus.getStatusText(httpStatus.OK));
@@ -195,10 +195,10 @@ export async function updateChallenge(req, res) {
     const challenge = await Challenge.findOneAndUpdate({
       name: req.params.name
     }, {
-      name: req.body.name
-    }, {
-      new: true
-    });
+        name: req.body.name
+      }, {
+        new: true
+      });
     if (challenge) {
       Utils.sendResponse(res, httpStatus.OK,
         httpStatus.getStatusText(httpStatus.OK));
@@ -381,8 +381,8 @@ export async function updateDeadline(req, res) {
       teams: req.body.teams,
       judging: req.body.judging
     }, {
-      new: true
-    });
+        new: true
+      });
     if (deadline) {
       redis.setDeadlines();
       Utils.sendResponse(res, httpStatus.OK,
@@ -407,8 +407,8 @@ export async function updateMail(req, res) {
       username: req.body.username,
       password: req.body.password
     }, {
-      new: true
-    });
+        new: true
+      });
     if (mail) {
       redis.populateWithConfig(mail);
       Utils.sendResponse(res, httpStatus.OK,
@@ -715,9 +715,9 @@ export async function createJudge(req, res) {
       }
     }
     const body = `Hi ${req.body.email},\nThank you for volunteering to judge the idea pitches for GameChangers 2019.`
-    + `\nYou can log in to your account at http://ec2-54-153-49-90.us-west-1.compute.amazonaws.com with the following credentials:\nemail: ${req.body.email}\npassword: ${password
-    }\nFor more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell, or email us at DellGameChangers@dell.com.`
-    + '\nWe appreciate your participation and partnership in encouraging innovation and team spirit at Dell,\nGameChangers 2019';
+      + `\nYou can log in to your account at http://ec2-54-153-49-90.us-west-1.compute.amazonaws.com with the following credentials:\nemail: ${req.body.email}\npassword: ${password
+      }\nFor more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell, or email us at DellGameChangers@dell.com.`
+      + '\nWe appreciate your participation and partnership in encouraging innovation and team spirit at Dell,\nGameChangers 2019';
     SendMail.sendEmail(req.body.email, 'Welcome to GameChangers 2019!', body);
 
     // const judgment = new Judgment({ judgeId: user._id, ideasID: [] });
@@ -917,7 +917,7 @@ export async function inviteRLeader(req, res) {
     let user = await User.findOne({ email: req.body.email.toLowerCase() });
     if (user) {
       user = await User.findOneAndUpdate({ email: req.body.email.toLowerCase() },
-        { $set: { isRLeader: true, teamMember: '-1',isCLeader: false } });
+        { $set: { isRLeader: true, teamMember: '-1', isCLeader: false } });
       const body = `Hi ${user.name} ,
       We are excited to let you know that you have been added you as a region leader of the GameChangers 2019.
     Please follow this link to login to your account
@@ -943,6 +943,48 @@ export async function inviteRLeader(req, res) {
         return;
       }
       newLeader(user, 'Region');
+    }
+
+
+    Utils.sendResponse(res, httpStatus.OK,
+      httpStatus.getStatusText(httpStatus.OK), user._id);
+    return;
+  } catch (err) {
+    Utils.sendResponse(res, httpStatus.BAD_REQUEST,
+      httpStatus.getStatusText(httpStatus.BAD_REQUEST), null, [{ message: err.message }]);
+  }
+}
+export async function inviteGLeader (req,res) {
+  try {
+    let user = await User.findOne({ email: req.body.email.toLowerCase() });
+    if (user) {
+      user = await User.findOneAndUpdate({ email: req.body.email.toLowerCase() },
+        { $set: { isGLeader: true, teamMember: '-1', isCLeader: false, isRLeader: false } });
+      const body = `Hi ${user.name} ,
+      We are excited to let you know that you have been added you as a Gloabl leader of the GameChangers 2019.
+    Please follow this link to login to your account
+    http://ec2-54-153-49-90.us-west-1.compute.amazonaws.com/
+    For more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell.
+    We look forward to your participation.
+    GameChangers 2019
+    Regards,
+    `;
+      SendMail.sendEmail(user.email, 'Welcome to GameChangers', body)
+    } else {
+      user = new User();
+      user.email = req.body.email.toLowerCase();
+      user.name = req.body.name;
+      user.chapter = "-1";
+      user.region = "-1";
+      user.password = '123123';
+      user.isGLeader = true;
+      const usr = await user.save();
+      if (!usr) {
+        Utils.sendResponse(res, httpStatus.BAD_REQUEST,
+          httpStatus.getStatusText(httpStatus.BAD_REQUEST), null, [{ message: 'couldn\'t save Leader' }]);
+        return;
+      }
+      newLeader(user, 'Global');
     }
 
 
@@ -988,6 +1030,22 @@ export async function emailChapter(req, res) {
     Utils.sendResponse(res, httpStatus.BAD_REQUEST,
       httpStatus.getStatusText(httpStatus.BAD_REQUEST), null, [{ message: error }]);
   }
+}
+export async function sendEmails(req, res) {
+  let emailList = req.body.emails
+  let subject = req.body.subject
+  let body = req.body.emailBody
+
+  console.log(emailList)
+  try {
+    SendMail.sendEmail(emailList, subject, body)
+    return Utils.sendResponse(res, httpStatus.OK, httpStatus.getStatusText(httpStatus.OK), null)
+  } catch (error) {
+    console.log(error)
+    return Utils.sendResponse(res, httpStatus.BAD_REQUEST,
+      httpStatus.getStatusText(httpStatus.BAD_REQUEST), null, [{ message: error }]);
+  }
+
 }
 // export async function makeAuserAJudge(req, res) {
 //   try {
