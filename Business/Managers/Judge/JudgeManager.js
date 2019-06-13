@@ -150,6 +150,30 @@ async function assignIdeatoJudge(req, res) {
         Utils.sendResponse(res, HttpStatus.NOT_FOUND, HttpStatus.getStatusText(HttpStatus.NOT_FOUND), null, [{ message: 'Judge not found.' }]);
         return;
       }
+      else {
+        console.log()
+        console.log()
+        console.log()
+        console.log()
+        console.log()
+        console.log('00000000000000000000000000000000000')
+        if (judge.isAdmin || judge.isCLeader || judge.isRLeader || judge.isGLeader) {
+          console.log()
+        console.log()
+        console.log()
+        console.log()
+        console.log()
+        console.log('11111111111111111111111111111111111111111')
+          Utils.sendResponse(res, HttpStatus.BAD_REQUEST,
+            HttpStatus.getStatusText(HttpStatus.BAD_REQUEST), null, [{ message: 'Cannot assign leader or admin as a judge to an idea' }]);
+          return;
+        }
+        else if (judge.teamMember != -1 || judge.creatorOf != -1) {
+          Utils.sendResponse(res, HttpStatus.BAD_REQUEST,
+            HttpStatus.getStatusText(HttpStatus.BAD_REQUEST), null, [{ message: 'Cannot assign team member or creator of a team as a judge to an idea' }]);
+          return;
+        }
+      }
       const judgments = idea.judgments.filter(judgment => judgment.judgeId === req.body.judgeId);
       if (judgments.length > 0) {
         Utils.sendResponse(res, HttpStatus.BAD_REQUEST, HttpStatus.getStatusText(HttpStatus.BAD_REQUEST), null, [{ message: 'Judge has already been assigned to this idea.' }]);
