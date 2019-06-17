@@ -680,7 +680,7 @@ export async function saveQuestions(req, res) {
       }
     });
     Utils.sendResponse(res, httpStatus.OK,
-      httpStatus.getStatusText(httpStatus.OK));
+      httpStatus.getStatusText(httpStatus.OK), null, [{ message: 'Successfully added questions'}]);
   } catch (error) {
     Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR,
       httpStatus.getStatusText(httpStatus.INTERNAL_SERVER_ERROR),
