@@ -652,6 +652,7 @@ export async function searchUsers(req, res) {
 }
 export async function saveQuestions(req, res) {
   const questions = req.body.questions;
+  console.log('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$', questions)
   try {
     await Question.deleteMany();
     questions.forEach((question) => {
@@ -689,8 +690,25 @@ export async function createJudge(req, res) {
   try {
     let user = await User.findOne({ email: req.body.email.toLowerCase() });
     if (user) {
-      user = await User.findOneAndUpdate({ email: req.body.email.toLowerCase() },
-        { $set: { isJudge: true } });
+      if (user.isJudge || user.isAdmin || user.isCLeader || user.isRLeader || user.isGLeader) {
+        Utils.sendResponse(res, httpStatus.BAD_REQUEST,
+          httpStatus.getStatusText(httpStatus.BAD_REQUEST), null, [{ message: 'Judge cannot be a leader or admin' }]);
+        return;
+      }
+      else if (user.teamMember != -1 || user.creatorOf != -1) {
+        Utils.sendResponse(res, httpStatus.BAD_REQUEST,
+          httpStatus.getStatusText(httpStatus.BAD_REQUEST), null, [{ message: 'Judge cannot be in a team or a creator of a team' }]);
+        return;
+      }
+      else {
+        user = await User.findOneAndUpdate({ email: req.body.email.toLowerCase() },
+          { $set: { isJudge: true } });
+
+        const body = `Hi ${req.body.email},\nThank you for volunteering to judge the idea pitches for GameChangers 2019.`
+          +`\nFor more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell, or email us at DellGameChangers@dell.com.`
+          + '\nWe appreciate your participation and partnership in encouraging innovation and team spirit at Dell,\nGameChangers 2019';
+        SendMail.sendEmail(req.body.email, 'Welcome to GameChangers 2019!', body);
+      }
     } else {
       // {"name":"aq","email":"q@emc.com","password":"123123","passConf":"123123","region":"EMEA","chapter":"Chapter1"}
       user = new User();
@@ -712,12 +730,18 @@ export async function createJudge(req, res) {
           httpStatus.getStatusText(httpStatus.BAD_REQUEST), null, [{ message: 'couldn\'t save judge' }]);
         return;
       }
+      const token = await Utils.getRandomToken();
+
+      await User.findByIdAndUpdate({ _id: user._id },
+        { resetPasswordToken: token, resetPasswordExpires: Date.now() + 86400000 },
+        { upsert: true, new: true });
+      // http://ec2-54-153-49-90.us-west-1.compute.amazonaws.com
+      const body = `Hi ${req.body.email},\nThank you for volunteering to judge the idea pitches for GameChangers 2019.`
+        + `\nYou can create a password for your account by clicking on the following link: http://ec2-54-153-49-90.us-west-1.compute.amazonaws.com/#/reset-password/${token} 
+        \nFor more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell, or email us at DellGameChangers@dell.com.`
+        + '\nWe appreciate your participation and partnership in encouraging innovation and team spirit at Dell,\nGameChangers 2019';
+      SendMail.sendEmail(req.body.email, 'Welcome to GameChangers 2019!', body);
     }
-    const body = `Hi ${req.body.email},\nThank you for volunteering to judge the idea pitches for GameChangers 2019.`
-      + `\nYou can log in to your account at http://ec2-54-153-49-90.us-west-1.compute.amazonaws.com with the following credentials:\nemail: ${req.body.email}\npassword: ${password
-      }\nFor more details about the competition, visit https://inside.dell.com/groups/gamechangers at Inside Dell, or email us at DellGameChangers@dell.com.`
-      + '\nWe appreciate your participation and partnership in encouraging innovation and team spirit at Dell,\nGameChangers 2019';
-    SendMail.sendEmail(req.body.email, 'Welcome to GameChangers 2019!', body);
 
     // const judgment = new Judgment({ judgeId: user._id, ideasID: [] });
     // const judgeSaved = await judgment.save();
@@ -953,7 +977,7 @@ export async function inviteRLeader(req, res) {
       httpStatus.getStatusText(httpStatus.BAD_REQUEST), null, [{ message: err.message }]);
   }
 }
-export async function inviteGLeader (req,res) {
+export async function inviteGLeader(req, res) {
   try {
     let user = await User.findOne({ email: req.body.email.toLowerCase() });
     if (user) {

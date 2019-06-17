@@ -25,9 +25,11 @@ router.route('/submit')
     judgeMiddelwares.isJudge, JudgeManager.submitJudgment);
 
 router.route('/assign-judge')
-  .post(validate(judgmentValidations.assign), isAdmin, JudgeManager.assignIdeatoJudge);
+  .post(validate(judgmentValidations.assign), judgeMiddelwares.isJudgeOrAdmin, JudgeManager.assignIdeatoJudge);
 
 router.route('/get-questions')
   .get(JudgeManager.getQuestions);
 
+router.route('/getTeamIdea/:teamName')
+  .get(JudgeManager.getTeamIdea)
 module.exports = router;

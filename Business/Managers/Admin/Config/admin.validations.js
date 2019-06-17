@@ -93,7 +93,7 @@ export const sendEmails = {
 export const saveQuestions = {
   body: {
     questions: Joi.array().items(Joi.object({
-      category: Joi.string().required(),
+      // category: Joi.string().required(),
       question: Joi.string().required(),
       rate: Joi.number().required(),
     }))
