@@ -4,7 +4,7 @@ import validate from 'express-validation';
 import config from '../../../config/config';
 import { isRegistrationDeadlineReached, validateMailDomain, validateLocation } from './Config/user.middlewares';
 import {
-  getAllDeadlines, getChapters, getRegions, getAllUsersC, getAllUsersR, emailChapter, emailRegion, sendEmails, getAllUsers, createJudge
+  getAllDeadlines, getChapters, getRegions, getAllUsersC, getAllUsersR, emailChapter, emailRegion, sendEmails, getAllUsers, createJudge, getAllTeams
 } from '../Admin/AdminManager';
 import {
 
@@ -37,7 +37,8 @@ router.route('/signup')
 router.route('/register')
   .post(registerUser);
 
-
+  router.route('/getAllTeams')
+  .get(getAllTeams);
 router.route('/email/chapter')
   .post(emailChapter);
   

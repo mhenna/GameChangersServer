@@ -35,9 +35,21 @@ export async function getAllUsers(_, res) {
 
 export async function getAllTeams(_, res) {
   try {
+    let result =[]
     const teams = await Team.find().populate('creator', 'email name');
+    result = teams.map(async team => {
+      const ideas = await Idea.findOne({teamName: team.name}, 'title category', (err, idea) => {
+        if (idea!=null) {
+          team['ideaname'] = idea.title;
+          team['category'] = idea.category;
+        }
+      })
+      return {name: team.name, members: team.members, creator: team.creator, region: team.region, chapter: team.chapter, ideaname: team.ideaname, category: team.category}
+    })
+    
+    const f = await Promise.all(result)
     Utils.sendResponse(res, httpStatus.OK, httpStatus.getStatusText(httpStatus.OK),
-      teams);
+      f);
   } catch (error) {
     Utils.sendResponse(res, httpStatus.INTERNAL_SERVER_ERROR, httpStatus.getStatusText(
       httpStatus.INTERNAL_SERVER_ERROR
